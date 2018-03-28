@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+service Taxons {
+    rpc Root (TaxonsRequest) returns (TaxonsResponse);
+}
+
+message TaxonsRequest {
+    string shopID = 1;
+}
+
+message TaxonsResponse {
+    string code = 1;
+    string name = 2;
+    string description = 3;
+
+    message Image {
+        string code = 1;
+        string path = 2; 
+    }
+
+    repeated Image images = 4;
+
+    repeated TaxonsResponse children = 5;
+}

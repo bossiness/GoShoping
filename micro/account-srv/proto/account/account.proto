@@ -1,0 +1,75 @@
+syntax = "proto3";
+
+package com.btdxcx.micro.srv.account;
+
+service Account {
+	rpc Read (ReadRequest) returns (ReadResponse);
+	rpc Create(CreateRequest) returns (CreateResponse) {}
+	rpc Update(UpdateRequest) returns (UpdateResponse) {}
+	rpc Delete(DeleteRequest) returns (DeleteResponse) {}
+	rpc Search(SearchRequest) returns (SearchResponse) {}
+}
+
+message Record {
+	// uuid
+	string id = 1;
+	// service or user
+	string type = 2;
+	// service name, username, etc
+	string client_id = 3;
+	// we leave this blank in responses
+	// used for update and create
+	string client_secret = 4;
+	map<string,string> metadata = 5;
+	// unix timestamp
+	int64 created = 6;
+	// unix timestamp
+	int64 updated = 7;
+}
+
+message ReadRequest {
+	string shop_id = 1;
+	string client_id = 2;
+}
+
+message ReadResponse {
+	Record account = 1;
+}
+
+message CreateRequest {
+	string shop_id = 1;
+	// If id is blank, one will be generated
+	Record account = 2;
+}
+
+message CreateResponse {
+}
+
+message UpdateRequest {
+	string shop_id = 1;
+	// Id and client_id cannot be changed
+	Record account = 2;
+}
+
+message UpdateResponse {
+}
+
+message DeleteRequest {
+	string shop_id = 1;
+	string id = 2;
+}
+
+message DeleteResponse {
+}
+
+message SearchRequest {
+	string shop_id = 1;
+	string client_id = 2;
+	string type = 3;
+	int64 limit = 4;
+	int64 offset = 5;
+}
+
+message SearchResponse {
+	repeated Record accounts = 1;
+}
