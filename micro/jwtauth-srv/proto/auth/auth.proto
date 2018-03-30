@@ -1,0 +1,73 @@
+syntax = "proto3";
+
+package com.btdxcx.micro.srv.jwtauth;
+
+service JwtAuth {
+	rpc Token(TokenRequest) returns (TokenResponse) {}
+	rpc Revoke(RevokeRequest) returns (RevokeResponse) {}
+	rpc Introspect(IntrospectRequest) returns (IntrospectResponse) {}
+	rpc Refresh (RefreshRequest) returns (RefreshResponse);
+}
+
+message Token {
+	// jwt
+	string access_token = 1;
+	// jwt
+	string refresh_token = 2;
+	int64 expires_at = 3;
+	repeated string scopes = 4;
+	map<string, string> metadata = 5;
+}
+
+message Record {
+	string client_id = 1;
+	string jti = 2;
+	string access_token = 3;
+	string refresh_token = 4;
+	string cipher = 5;
+}
+
+message TokenRequest {
+	string client_id = 1;
+	string client_secrent = 2;
+
+	repeated string scopes = 3;
+	map<string, string> metadata = 4;
+
+	string shop_id = 5;
+}
+
+message TokenResponse {
+	Token token = 1;
+}
+
+message RevokeRequest {
+	// revoke access token
+	string access_token = 1;
+	// revoke via refresh token
+	string refresh_token = 2;
+
+	string shop_id = 3;
+}
+
+message RevokeResponse {
+}
+
+message IntrospectRequest {
+	string access_token = 1;
+	string shop_id = 2;
+}
+
+message IntrospectResponse {
+	Token token = 1;
+	bool active = 2;
+}
+
+message RefreshRequest {
+	string refresh_token = 1;
+	string shop_id = 2;
+}
+
+message RefreshResponse {
+	Token token = 1;
+}
