@@ -3,6 +3,8 @@ package handler
 import (
 	"context"
 
+	"btdxcx.com/micro/shop-srv/wrapper/inspection/shop-key"
+
 	"btdxcx.com/os/custom-error"
 
 	"btdxcx.com/micro/taxons-srv/db"
@@ -23,11 +25,12 @@ type Handler struct{}
 func (h *Handler) Root(ctx context.Context, req *proto.TaxonsShopIDRequest, rsp *proto.TaxonsMessage) error {
 	log.Log("Received Taxons.Root request")
 
-	if err := validateShopID(req.ShopID, "Root"); err != nil {
+	shopID, err := shopkey.FromCtx(ctx)
+	if err != nil {
 		return err
 	}
 
-	message, err := db.Read(req.ShopID)
+	message, err := db.Read(shopID)
 	if err != nil {
 		return err
 	}
@@ -48,18 +51,19 @@ func copyTaxonsMessage(dst, src *proto.TaxonsMessage) {
 // Create is a single request handler called via client.Create or the generated client code
 func (h *Handler) Create(ctx context.Context, req *proto.TasonsCreateRequest, rsp *proto.TasonsCodeResponse) error {
 
-	if err := validateShopID(req.ShopID, "Create"); err != nil {
+	shopID, err := shopkey.FromCtx(ctx)
+	if err != nil {
 		return err
 	}
 
 	data := &proto.TaxonsMessage{
-		ShopID:      req.ShopID,
+		ShopID:      shopID,
 		Name:        req.Name,
 		Description: req.Description,
 		Images:      req.Images,
 	}
 
-	code, err := db.Create(req.ShopID, data)
+	code, err := db.Create(shopID, data)
 	if err != nil {
 		return err
 	}
@@ -70,17 +74,18 @@ func (h *Handler) Create(ctx context.Context, req *proto.TasonsCreateRequest, rs
 // CreateChildren is a single request handler called via client.CreateChildren or the generated client code
 func (h *Handler) CreateChildren(ctx context.Context, req *proto.TaxonsRequest, rsp *proto.TasonsCodeResponse) error {
 
-	if err := validate(req.ShopID, req.Code, "CreateChildren"); err != nil {
+	shopID, err := shopkey.FromCtx(ctx)
+	if err != nil {
 		return err
 	}
 	data := &proto.TaxonsMessage{
-		ShopID:      req.ShopID,
+		ShopID:      shopID,
 		Code:        req.Code,
 		Name:        req.Name,
 		Description: req.Description,
 		Images:      req.Images,
 	}
-	code, err := db.Create(req.ShopID, data)
+	code, err := db.Create(shopID, data)
 	if err != nil {
 		return err
 	}
@@ -91,28 +96,37 @@ func (h *Handler) CreateChildren(ctx context.Context, req *proto.TaxonsRequest, 
 // Update is a single request handler called via client.Update or the generated client code
 func (h *Handler) Update(ctx context.Context, req *proto.TaxonsRequest, rsp *proto.TasonsCodeResponse) error {
 
-	if err := validate(req.ShopID, req.Code, "Update"); err != nil {
+	shopID, err := shopkey.FromCtx(ctx)
+	if err != nil {
+		return err
+	}
+	if err := validateCode(req.Code, "Update"); err != nil {
 		return err
 	}
 
 	data := &proto.TaxonsMessage{
-		ShopID:      req.ShopID,
+		ShopID:      shopID,
 		Code:        req.Code,
 		Name:        req.Name,
 		Description: req.Description,
 		Images:      req.Images,
 	}
 	rsp.Code = req.Code
-	return db.Update(req.ShopID, data)
+	return db.Update(shopID, data)
 }
 
 // Delete is a single request handler called via client.Delete or the generated client code
 func (h *Handler) Delete(ctx context.Context, req *proto.TasonsDeleteRequest, rsp *proto.TasonsCodeResponse) error {
-	if err := validate(req.ShopID, req.Code, "Delete"); err != nil {
+
+	shopID, err := shopkey.FromCtx(ctx)
+	if err != nil {
+		return err
+	}
+	if err := validateCode(req.Code, "Delete"); err != nil {
 		return err
 	}
 
-	if err := db.Delete(req.ShopID, req.Code); err != nil {
+	if err := db.Delete(shopID, req.Code); err != nil {
 		return customerror.Conversion(err, svrName, "Delete")
 	}
 
@@ -150,31 +164,11 @@ func (h *Handler) PingPong(ctx context.Context, stream proto.Taxons_PingPongStre
 	}
 }
 
-func validateShopID(shopID string, method string) error {
-	if len(shopID) < 6 {
-		return customerror.BadRequest(svrName, method, "invalid Shop ID")
-	}
-
-	return nil
-}
-
 func validateCode(code string, method string) error {
 
 	if len(code) < 5 {
 		return customerror.BadRequest(svrName, method, "invalid code")
 	}
 
-	return nil
-}
-
-func validate(shopID string, code string, method string) error {
-
-	if err := validateShopID(shopID, method); err != nil {
-		return err
-	}
-	if err := validateCode(code, method); err != nil {
-		return err
-	}
-	log.Log("validate pass!")
 	return nil
 }

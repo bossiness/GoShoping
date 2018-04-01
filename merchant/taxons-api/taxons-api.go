@@ -2,18 +2,19 @@ package taxonsapi
 
 import (
 	"net/http"
-	"golang.org/x/net/context"
-	"github.com/micro/go-micro/errors"
+
+	"btdxcx.com/micro/shop-srv/wrapper/inspection/shop-key"
 	"github.com/micro/go-log"
+	"github.com/micro/go-micro/errors"
 
 	"time"
-	"github.com/micro/cli"
-	"github.com/micro/go-web"
+
 	"github.com/emicklei/go-restful"
+	"github.com/micro/cli"
 	"github.com/micro/go-micro/client"
+	"github.com/micro/go-web"
 
 	prtot "btdxcx.com/micro/taxons-srv/proto/imp"
-
 )
 
 // API is APIs
@@ -25,15 +26,14 @@ var (
 
 const (
 	serviceName = "com.btdxcx.merchant.api.taxons"
-	clientName = "com.btdxcx.shop.srv.taxons"
+	clientName  = "com.btdxcx.shop.srv.taxons"
 )
 
-
-func (api *API) rootTaxons(req *restful.Request, rsp *restful.Response)  {
+func (api *API) rootTaxons(req *restful.Request, rsp *restful.Response) {
 	log.Log("Received API.rootTaxons API request")
 
-	shopID := req.HeaderParameter("M-SHOP-ID")
-	response, err := cl.Root(context.TODO(), &prtot.TaxonsShopIDRequest{ ShopID: shopID })
+	ctx := shopkey.NewNewContext(req.Request.Context(), req.HeaderParameter("X-SHOP-KEY"))
+	response, err := cl.Root(ctx, &prtot.TaxonsShopIDRequest{})
 
 	if err != nil {
 		writeError(err, rsp)
@@ -43,18 +43,16 @@ func (api *API) rootTaxons(req *restful.Request, rsp *restful.Response)  {
 	rsp.WriteEntity(response)
 }
 
-func (api *API) createTaxons(req *restful.Request, rsp *restful.Response)  {
+func (api *API) createTaxons(req *restful.Request, rsp *restful.Response) {
 
-	shopID := req.HeaderParameter("M-SHOP-ID")
 	request := new(prtot.TasonsCreateRequest)
 	if err := req.ReadEntity(&request); err != nil {
-		rsp.AddHeader("Content-Type", "text/plain")
 		rsp.WriteErrorString(http.StatusInternalServerError, err.Error())
 		return
 	}
-	request.ShopID = shopID
 
-	response, err := cl.Create(context.TODO(), request)
+	ctx := shopkey.NewNewContext(req.Request.Context(), req.HeaderParameter("X-SHOP-KEY"))
+	response, err := cl.Create(ctx, request)
 
 	if err != nil {
 		writeError(err, rsp)
@@ -64,18 +62,17 @@ func (api *API) createTaxons(req *restful.Request, rsp *restful.Response)  {
 	rsp.WriteEntity(response)
 }
 
-func (api *API) createChildren(req *restful.Request, rsp *restful.Response)  {
+func (api *API) createChildren(req *restful.Request, rsp *restful.Response) {
 
 	request := new(prtot.TaxonsRequest)
 	if err := req.ReadEntity(&request); err != nil {
-		rsp.AddHeader("Content-Type", "text/plain")
 		rsp.WriteErrorString(http.StatusInternalServerError, err.Error())
 		return
 	}
-	request.ShopID = req.HeaderParameter("M-SHOP-ID")
+	ctx := shopkey.NewNewContext(req.Request.Context(), req.HeaderParameter("X-SHOP-KEY"))
 	request.Code = req.PathParameter("code")
 
-	response, err := cl.CreateChildren(context.TODO(), request)
+	response, err := cl.CreateChildren(ctx, request)
 
 	if err != nil {
 		writeError(err, rsp)
@@ -85,18 +82,17 @@ func (api *API) createChildren(req *restful.Request, rsp *restful.Response)  {
 	rsp.WriteEntity(response)
 }
 
-func (api *API) updateTaxons(req *restful.Request, rsp *restful.Response)  {
+func (api *API) updateTaxons(req *restful.Request, rsp *restful.Response) {
 
 	request := new(prtot.TaxonsRequest)
 	if err := req.ReadEntity(&request); err != nil {
-		rsp.AddHeader("Content-Type", "text/plain")
 		rsp.WriteErrorString(http.StatusInternalServerError, err.Error())
 		return
 	}
-	request.ShopID = req.HeaderParameter("M-SHOP-ID")
 	request.Code = req.PathParameter("code")
 
-	response, err := cl.Update(context.TODO(), request)
+	ctx := shopkey.NewNewContext(req.Request.Context(), req.HeaderParameter("X-SHOP-KEY"))
+	response, err := cl.Update(ctx, request)
 
 	if err != nil {
 		writeError(err, rsp)
@@ -106,11 +102,12 @@ func (api *API) updateTaxons(req *restful.Request, rsp *restful.Response)  {
 	rsp.WriteEntity(response)
 }
 
-func (api *API) deleteTaxons(req *restful.Request, rsp *restful.Response)  {
+func (api *API) deleteTaxons(req *restful.Request, rsp *restful.Response) {
 
-	shopID := req.HeaderParameter("M-SHOP-ID")
 	code := req.PathParameter("code")
-	response, err := cl.Delete(context.TODO(), &prtot.TasonsDeleteRequest{ ShopID: shopID, Code: code })
+
+	ctx := shopkey.NewNewContext(req.Request.Context(), req.HeaderParameter("X-SHOP-KEY"))
+	response, err := cl.Delete(ctx, &prtot.TasonsDeleteRequest{Code: code})
 
 	if err != nil {
 		writeError(err, rsp)
@@ -129,20 +126,21 @@ func writeError(err error, rsp *restful.Response) {
 	}
 }
 
-func api(ctx *cli.Context)  {
+func api(ctx *cli.Context) {
 	service := web.NewService(
 		web.Name(serviceName),
 		web.RegisterTTL(
-			time.Duration(ctx.GlobalInt("register_ttl")) * time.Second,
+			time.Duration(ctx.GlobalInt("register_ttl"))*time.Second,
 		),
 		web.RegisterInterval(
-			time.Duration(ctx.GlobalInt("register_interval")) * time.Second,
+			time.Duration(ctx.GlobalInt("register_interval"))*time.Second,
 		),
 	)
 
-//	service.Init()
+	//	service.Init()
 
-	cl = prtot.NewTaxonsClient(clientName, client.DefaultClient)
+	wrapper := shopkey.NewClientWrapper("X-SHOP-KEY", "back")
+	cl = prtot.NewTaxonsClient(clientName, wrapper(client.DefaultClient))
 
 	api := new(API)
 	ws := new(restful.WebService)
@@ -150,12 +148,26 @@ func api(ctx *cli.Context)  {
 	ws.Consumes(restful.MIME_XML, restful.MIME_JSON)
 	ws.Produces(restful.MIME_JSON, restful.MIME_XML)
 	ws.Path("/taxons")
+
 	ws.Route(ws.GET("").To(api.rootTaxons))
 	ws.Route(ws.POST("").To(api.createTaxons))
+
 	ws.Route(ws.POST("/{code}").To(api.createChildren))
 	ws.Route(ws.PUT("/{code}").To(api.updateTaxons))
 	ws.Route(ws.DELETE("/{code}").To(api.deleteTaxons))
+
 	wc.Add(ws)
+
+	// config := swagger.Config{
+	// 	WebServices:    wc.RegisteredWebServices(), // you control what services are visible
+	// 	WebServicesUrl: "http://localhost:8080",
+	// 	ApiPath:        "/taxons/apidocs.json",
+
+	// 	// Optionally, specify where the UI is located
+	// 	SwaggerPath:     "/taxons/apidocs/",
+	// 	SwaggerFilePath: "/Users/jigang.duan/xProjects/swagger-ui/dist",
+	// }
+	// swagger.RegisterSwaggerService(config, wc)
 
 	service.Handle("/", wc)
 
@@ -169,9 +181,17 @@ func api(ctx *cli.Context)  {
 func Commands() []cli.Command {
 	return []cli.Command{
 		{
-			Name:  "taxons",
-			Usage: "Run taxons api",
+			Name:   "taxons",
+			Usage:  "Run taxons api",
 			Action: api,
 		},
 	}
+}
+
+func returns200(b *restful.RouteBuilder) {
+	b.Returns(http.StatusOK, "OK", prtot.TaxonsMessage{})
+}
+
+func returns500(b *restful.RouteBuilder) {
+	b.Returns(http.StatusInternalServerError, "Bummer, something went wrong", nil)
 }

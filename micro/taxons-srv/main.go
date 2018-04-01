@@ -1,6 +1,7 @@
 package main
 
 import (
+	// "btdxcx.com/micro/shop-srv/wrapper/inspection/shop-key"
 	"time"
 
 	"btdxcx.com/micro/taxons-srv/db"
@@ -19,7 +20,9 @@ import (
 func main() {
 	// New Service
 	service := micro.NewService(
-		micro.Server(server.NewServer(server.WrapHandler(wrapper.LogWrapper))),
+		micro.Server(
+			server.NewServer(server.WrapHandler(wrapper.LogWrapper)),
+		),
 		micro.Name("com.btdxcx.shop.srv.taxons"),
 		micro.Version("latest"),
 		micro.RegisterTTL(time.Second*30),
@@ -41,7 +44,9 @@ func main() {
 				mongodb.Url = c.String("database_url")
 			}
 		}),
+
 	)
+
 
 	// Register Handler
 	proto.RegisterTaxonsHandler(service.Server(), new(handler.Handler))

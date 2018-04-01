@@ -1,8 +1,9 @@
 package main
 
 import (
-	"btdxcx.com/merchant/taxons-api"
 	"os"
+
+	"btdxcx.com/merchant/taxons-api"
 
 	ccli "github.com/micro/cli"
 	"github.com/micro/go-micro/cmd"
@@ -14,9 +15,9 @@ func init() {
 
 func setup(app *ccli.App) {
 	// common flags
-	app.Flags = append(app.Flags, 
+	app.Flags = append(app.Flags,
 		ccli.StringFlag{
-			Name: "register_ttl",
+			Name:   "register_ttl",
 			EnvVar: "MICRO_REGISTER_TTL",
 			Usage:  "Register TTL in seconds",
 		},

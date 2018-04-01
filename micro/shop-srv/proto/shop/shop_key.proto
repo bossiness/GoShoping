@@ -1,0 +1,36 @@
+syntax = "proto3";
+
+package com.btdxcx.micro.srv.shop;
+
+service ShopKey {
+	rpc Create(KeyRequest) returns (KeyResponse) {}
+	rpc Read(KeyRequest) returns (KeyResponse) {}
+	rpc Delete (KeyRequest) returns (DeleteKeyResponse) {}
+	rpc Introspect (IntrospectRequest) returns (IntrospectResponse);
+}
+
+message ShopKeyID {
+	string back_key = 1;
+	string mini_key = 2;
+}
+
+message KeyRequest {
+	string uuid = 1;
+}
+
+message KeyResponse {
+	ShopKeyID key = 1;
+}
+
+message DeleteKeyResponse {
+}
+
+message IntrospectRequest {
+	string key = 1;
+}
+
+message IntrospectResponse {
+	string type = 1;
+	string uuid = 2;
+	bool active = 3;
+}

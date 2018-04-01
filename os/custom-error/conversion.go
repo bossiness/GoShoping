@@ -1,6 +1,7 @@
 package customerror
 
 import (
+	"github.com/emicklei/go-restful"
 	"github.com/micro/go-micro/errors"
 )
 
@@ -62,4 +63,14 @@ func ValidateShopIDAndID(shopID string, id string, svrName string, method string
 		return err
 	}
 	return ValidateID(id, svrName, method)
+}
+
+// WriteError write error to response
+func WriteError(err error, rsp *restful.Response) {
+	error := errors.Parse(err.Error())
+	if error.Code == 0 {
+		rsp.WriteError(500, err)
+	} else {
+		rsp.WriteError(int(error.Code), error)
+	}
 }
