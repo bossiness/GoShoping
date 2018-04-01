@@ -1,9 +1,9 @@
 package mongodb
 
 import (
-	"gopkg.in/mgo.v2/bson"
 	"btdxcx.com/micro/shop-srv/db"
 	"gopkg.in/mgo.v2"
+	"gopkg.in/mgo.v2/bson"
 
 	proto "btdxcx.com/micro/shop-srv/proto/shop"
 )
@@ -40,37 +40,46 @@ func (m *Mongo) Init() error {
 
 // ShopKey DB
 type ShopKey struct {
-	ID      bson.ObjectId `bson:"_id,omitempty"`
-	UUID    string        `bson:"uuid"`
-	BackKey string        `bson:"back_key"`
-	MiniKey string        `bson:"mini_key"`
+	ID     bson.ObjectId     `bson:"_id,omitempty"`
+	UUID   string            `bson:"uuid"`
+	TagKey map[string]string `bson:"tag_key"`
 }
 
 // ReadKey form uuid
-func (m *Mongo) ReadKey(uuid string) (*proto.ShopKeyID, error) {
+func (m *Mongo) ReadKey(uuid string) (*proto.ShopTagKeys, error) {
 	c := m.session.DB(databaseName).C(keyCollection)
 
 	result := &ShopKey{}
-	if err := c.Find(bson.M{ "uuid": uuid}).One(result); err != nil {
+	if err := c.Find(bson.M{"uuid": uuid}).One(result); err != nil {
 		return nil, err
 	}
 
-	shopKey := &proto.ShopKeyID{ 
-		BackKey: result.BackKey, 
-		MiniKey: result.MiniKey }
+	shopKey := &proto.ShopTagKeys{
+		Tagkeys: result.TagKey,
+	}
 
 	return shopKey, nil
 }
 
 // CreateKey form uuid
-func (m *Mongo) CreateKey(uuid string, proto *proto.ShopKeyID) error {
+func (m *Mongo) CreateKey(uuid string, proto *proto.ShopTagKeys) error {
 	c := m.session.DB(databaseName).C(keyCollection)
 
-	shopKey := &ShopKey {
-		ID: bson.NewObjectId(),
-		UUID: uuid,
-		BackKey: proto.BackKey,
-		MiniKey: proto.MiniKey,
+	index := mgo.Index {
+		Key: []string{"uuid"},
+		Unique: true,
+		DropDups: true,
+		Background: true,
+	}
+
+	if err := c.EnsureIndex(index); err != nil {
+		return err
+	}
+
+	shopKey := &ShopKey{
+		ID:     bson.NewObjectId(),
+		UUID:   uuid,
+		TagKey: proto.Tagkeys,
 	}
 	return c.Insert(shopKey)
 }
@@ -78,5 +87,5 @@ func (m *Mongo) CreateKey(uuid string, proto *proto.ShopKeyID) error {
 // DeleteKey form uuid
 func (m *Mongo) DeleteKey(uuid string) error {
 	c := m.session.DB(databaseName).C(keyCollection)
-	return c.Remove(bson.M{ "uuid": uuid })
+	return c.Remove(bson.M{"uuid": uuid})
 }

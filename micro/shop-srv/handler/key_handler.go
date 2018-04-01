@@ -13,7 +13,9 @@ import (
 )
 
 // KeyHandler key handler
-type KeyHandler struct{}
+type KeyHandler struct{
+	Tags []string
+}
 
 // Create key
 func (key *KeyHandler) Create(ctx context.Context, req *proto.KeyRequest, rsp *proto.KeyResponse) error {
@@ -22,28 +24,26 @@ func (key *KeyHandler) Create(ctx context.Context, req *proto.KeyRequest, rsp *p
 	if _, err :=  gouuid.FromString(uuid); err != nil {
 		return errors.BadRequest("com.btdxcx.micro.srv.shop.key.Create", err.Error())
 	}
-	backUUID := "back@" + uuid
-	miniUUID := "mini@" + uuid
+
+	tagKeys := map[string]string{}
 	aesEnc := coding.AesEncrypt{}
-
-	byteBack, err1 := aesEnc.Encrypt(backUUID)
-	if err1 != nil {
-		return errors.InternalServerError("com.btdxcx.micro.srv.shop.key.Create", err1.Error())
+	for _, tag := range key.Tags {
+		tagUUID := tag + "@" + uuid
+		byteTag, err := aesEnc.Encrypt(tagUUID)
+		if err != nil {
+			return errors.InternalServerError("com.btdxcx.micro.srv.shop.key.Create", err.Error())
+		}
+		tagKey := hex.EncodeToString(byteTag)
+		tagKeys[tag] = tagKey
 	}
-	byteMini, err2 := aesEnc.Encrypt(miniUUID)
-	if err2 != nil {
-		return errors.InternalServerError("com.btdxcx.micro.srv.shop.key.Create", err2.Error())
-	}
 
-	backKey := hex.EncodeToString(byteBack)
-	miniKey := hex.EncodeToString(byteMini)
-	shopKeyID := &proto.ShopKeyID { BackKey: backKey, MiniKey: miniKey  }
+	shopKeysID := &proto.ShopTagKeys{ Tagkeys: tagKeys }
 
-	if err := db.CreateKey(uuid, shopKeyID); err != nil {
+	if err := db.CreateKey(uuid, shopKeysID); err != nil {
 		return errors.InternalServerError("com.btdxcx.micro.srv.shop.key.Create", err.Error())
 	}
 
-	rsp.Key = shopKeyID
+	rsp.Keys = shopKeysID
 	return nil
 }
 
@@ -54,7 +54,7 @@ func (key *KeyHandler) Read(ctx context.Context, req *proto.KeyRequest, rsp *pro
 		return errors.BadRequest("com.btdxcx.micro.srv.shop.key.Read", err.Error())
 	}
 
-	rsp.Key = shopKeyID
+	rsp.Keys = shopKeyID
 	return nil
 }
 
@@ -69,7 +69,7 @@ func (key *KeyHandler) Delete(ctx context.Context, req *proto.KeyRequest, rsp *p
 // Introspect key
 func (key *KeyHandler) Introspect(ctx context.Context, req *proto.IntrospectRequest, rsp *proto.IntrospectResponse) error {
 	
-	uuid, ctype, err := introspectShopKey(req.Key)
+	uuid, ctype, err := introspectShopKey(key.Tags, req.Key)
 	if err != nil {
 		return err
 	}
@@ -79,7 +79,7 @@ func (key *KeyHandler) Introspect(ctx context.Context, req *proto.IntrospectRequ
 	return nil
 }
 
-func introspectShopKey(shopKey string) (string, string, error) {
+func introspectShopKey(tags []string, shopKey string) (string, string, error) {
 
 	byteKey, err1 := hex.DecodeString(shopKey)
 	if err1 != nil {
@@ -99,8 +99,10 @@ func introspectShopKey(shopKey string) (string, string, error) {
 	if _, err := db.ReadKey(uuid); err != nil {
 		return "", "", errors.BadRequest("com.btdxcx.micro.srv.shop.key.Read", err.Error())
 	}
-	if ids[0] == "back" || ids[0] == "mini" {
-		return uuid, ids[0], nil
+	for _, tag := range tags {
+		if ids[0] == tag {
+			return uuid, tag, nil
+		}
 	}
 	
 	return "", "", errors.BadRequest("com.btdxcx.micro.srv.shop.key.Introspect", "shop-key type invalid")

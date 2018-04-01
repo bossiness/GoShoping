@@ -12,8 +12,8 @@ type DB interface {
 
 // ShopKey is ShopKey数据接口
 type ShopKey interface {
-	ReadKey(string) (*proto.ShopKeyID, error)
-	CreateKey(string, *proto.ShopKeyID) error
+	ReadKey(string) (*proto.ShopTagKeys, error)
+	CreateKey(string, *proto.ShopTagKeys) error
 	DeleteKey(string) error
 }
 
@@ -32,12 +32,12 @@ func Init() error {
 }
 
 // ReadKey form uuid
-func ReadKey(id string) (*proto.ShopKeyID, error) {
+func ReadKey(id string) (*proto.ShopTagKeys, error) {
 	return db.ReadKey(id)
 }
 
 // CreateKey form uuid
-func CreateKey(id string, shopKey *proto.ShopKeyID) error {
+func CreateKey(id string, shopKey *proto.ShopTagKeys) error {
 	return db.CreateKey(id, shopKey)
 }
 

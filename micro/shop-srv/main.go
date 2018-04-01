@@ -41,7 +41,8 @@ func main() {
 	)
 
 	// Register Handler
-	proto.RegisterShopKeyHandler(service.Server(), new(handler.KeyHandler))
+	keyHandler := &handler.KeyHandler{ Tags: []string{ "back", "mini" } }
+	proto.RegisterShopKeyHandler(service.Server(), keyHandler)
 
 	// Initialise service
 	service.Init()
