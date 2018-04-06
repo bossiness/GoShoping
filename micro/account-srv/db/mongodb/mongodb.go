@@ -89,6 +89,17 @@ func (m *Mongo) Create(dbName string, record *proto.Record) error {
 		return errors.Conflict("account.srv", "account conflict.")
 	}
 
+	index := mgo.Index{
+		Key:        []string{"client_id"},
+		Unique:     true,
+		DropDups:   true,
+		Background: true,
+	}
+
+	if err := c.EnsureIndex(index); err != nil {
+		return err
+	}
+
 	result := &Account{
 		id:           bson.NewObjectId(),
 		Type:         record.Type,

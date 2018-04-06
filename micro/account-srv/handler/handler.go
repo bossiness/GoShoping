@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"btdxcx.com/micro/shop-srv/wrapper/inspection/shop-key"
 	"context"
 
 	"btdxcx.com/micro/account-srv/db"
@@ -21,10 +22,15 @@ type Handler struct{}
 func (h *Handler) Read(ctx context.Context, req *proto.ReadRequest, rsp *proto.ReadResponse) error {
 	log.Log("Received Account.Read request")
 
-	if err := customerror.ValidateShopIDAndName(req.ShopId, req.ClientId, serviceName, "Read"); err != nil {
+	shopID, err0 := shopkey.FromCtx(ctx)
+	if err0 != nil {
+		return err0
+	}
+
+	if err := customerror.ValidateShopIDAndName(shopID, req.ClientId, serviceName, "Read"); err != nil {
 		return err
 	}
-	record, err := db.Read(req.ShopId, req.ClientId)
+	record, err := db.Read(shopID, req.ClientId)
 	if err != nil {
 		return customerror.Conversion(err, serviceName, "Read")
 	}
@@ -34,36 +40,52 @@ func (h *Handler) Read(ctx context.Context, req *proto.ReadRequest, rsp *proto.R
 
 // Create account
 func (h *Handler) Create(ctx context.Context, req *proto.CreateRequest, rsp *proto.CreateResponse) error {
+	shopID, err0 := shopkey.FromCtx(ctx)
+	if err0 != nil {
+		return err0
+	}
 
-	if err := customerror.ValidateShopIDAndName(req.ShopId, req.Account.ClientId, serviceName, "Create"); err != nil {
+	if err := customerror.ValidateShopIDAndName(shopID, req.Account.ClientId, serviceName, "Create"); err != nil {
 		return err
 	}
 
-	return customerror.Conversion(db.Create(req.ShopId, req.Account), serviceName, "Create")
+	return customerror.Conversion(db.Create(shopID, req.Account), serviceName, "Create")
 }
 
 // Update account
 func (h *Handler) Update(ctx context.Context, req *proto.UpdateRequest, rsp *proto.UpdateResponse) error {
+	shopID, err0 := shopkey.FromCtx(ctx)
+	if err0 != nil {
+		return err0
+	}
 
-	if err := customerror.ValidateShopIDAndName(req.ShopId, req.Account.ClientId, serviceName, "Update"); err != nil {
+	if err := customerror.ValidateShopIDAndName(shopID, req.Account.ClientId, serviceName, "Update"); err != nil {
 		return err
 	}
-	return customerror.Conversion(db.Update(req.ShopId, req.Account), serviceName, "Create")
+	return customerror.Conversion(db.Update(shopID, req.Account), serviceName, "Create")
 }
 
 // Delete account
 func (h *Handler) Delete(ctx context.Context, req *proto.DeleteRequest, rsp *proto.DeleteResponse) error {
+	shopID, err0 := shopkey.FromCtx(ctx)
+	if err0 != nil {
+		return err0
+	}
 
-	if err := customerror.ValidateShopIDAndID(req.ShopId, req.Id, serviceName, "Delete"); err != nil {
+	if err := customerror.ValidateShopIDAndID(shopID, req.Id, serviceName, "Delete"); err != nil {
 		return err
 	}
-	return customerror.Conversion(db.Delete(req.ShopId, req.Id), serviceName, "Delete")
+	return customerror.Conversion(db.Delete(shopID, req.Id), serviceName, "Delete")
 }
 
 // Search account
 func (h *Handler) Search(ctx context.Context, req *proto.SearchRequest, rsp *proto.SearchResponse) error {
+	shopID, err0 := shopkey.FromCtx(ctx)
+	if err0 != nil {
+		return err0
+	}
 
-	if err := customerror.ValidateShopIDAndName(req.ShopId, req.ClientId, serviceName, "Search"); err != nil {
+	if err := customerror.ValidateShopIDAndName(shopID, req.ClientId, serviceName, "Search"); err != nil {
 		return err
 	}
 	if req.Limit <= 0 {
@@ -73,7 +95,7 @@ func (h *Handler) Search(ctx context.Context, req *proto.SearchRequest, rsp *pro
 		req.Offset = 0
 	}
 
-	records, err := db.Search(req.ShopId, req)
+	records, err := db.Search(shopID, req)
 	if err != nil {
 		return customerror.Conversion(err, serviceName, "Search")
 	}

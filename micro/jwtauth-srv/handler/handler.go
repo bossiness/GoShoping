@@ -1,6 +1,8 @@
 package handler
 
 import (
+	"btdxcx.com/micro/shop-srv/wrapper/inspection/shop-key"
+	twrapper "btdxcx.com/micro/jwtauth-srv/wrapper"
 	"context"
 	"crypto/md5"
 	"encoding/hex"
@@ -29,7 +31,13 @@ func (h *Handler) Token(ctx context.Context, req *proto.TokenRequest, rsp *proto
 	}
 	clientID := req.ClientId
 	clientSecrent := req.ClientSecrent
-	shopID := req.ShopId
+	shopID, err0 := shopkey.FromCtx(ctx)
+	if err0 != nil {
+		if len(req.ShopId) == 0 {
+			return err0
+		} 
+		shopID = req.ShopId
+	}
 
 	if len(clientID) < 3 {
 		return errors.BadRequest("com.btdxcx.micro.srv.jwtauth.Token", "client_id invalid")
@@ -120,17 +128,21 @@ func accessToken(jti string,
 
 // Revoke delete
 func (h *Handler) Revoke(ctx context.Context, req *proto.RevokeRequest, rsp *proto.RevokeResponse) error {
+	shopID, err0 := shopkey.FromCtx(ctx)
+	if err0 != nil {
+		return err0
+	}
 
-	if len(req.ShopId) < 6 {
+	if len(shopID) < 6 {
 		return errors.BadRequest("com.btdxcx.micro.srv.jwtauth.Revoke", "ShopId is empty.")
 	}
 
 	if len(req.AccessToken) > 10 {
-		if err := db.DeleteAccessToken(req.ShopId, req.AccessToken); err != nil {
+		if err := db.DeleteAccessToken(shopID, req.AccessToken); err != nil {
 			return errors.InternalServerError("com.btdxcx.micro.srv.jwtauth.Revoke", err.Error())
 		}
 	} else if len(req.RefreshToken) > 10 {
-		if err := db.DeleteRefreshToken(req.ShopId, req.RefreshToken); err != nil {
+		if err := db.DeleteRefreshToken(shopID, req.RefreshToken); err != nil {
 			return errors.InternalServerError("com.btdxcx.micro.srv.jwtauth.Revoke", err.Error())
 		}
 	} else {
@@ -161,18 +173,27 @@ func parseToken(tokenString string, secret string) (map[string]interface{}, erro
 
 // Introspect 验证
 func (h *Handler) Introspect(ctx context.Context, req *proto.IntrospectRequest, rsp *proto.IntrospectResponse) error {
+	log.Log("Received Jwtauth.Introspect request")
+	shopID, err0 := shopkey.FromCtx(ctx)
+	if err0 != nil {
+		return err0
+	}
+	accessToken, err1 := twrapper.FromCtx(ctx)
+	if err1 != nil {
+		return err1
+	}
 
-	record, err := db.Read(req.ShopId, req.AccessToken)
+	record, err := db.Read(shopID, accessToken)
 	if err != nil {
 		return errors.Unauthorized("com.btdxcx.micro.srv.jwtauth", err.Error())
 	}
-	claims, err := parseToken(req.AccessToken, record.Cipher)
+	claims, err := parseToken(record.AccessToken, record.Cipher)
 	if err != nil {
-		return errors.InternalServerError("com.btdxcx.micro.srv.jwtauth.Introspect", "token parse fault")
+		return errors.Unauthorized("com.btdxcx.micro.srv.jwtauth.Introspect", "token parse fault")
 	}
 
 	claimsShopID := claims["shop_id"].(string)
-	if claimsShopID != req.ShopId {
+	if claimsShopID != shopID {
 		return errors.Unauthorized("com.btdxcx.micro.srv.jwtauth.Introspect", "token invalid shopid[%s]", claimsShopID)
 	}
 	claimsJTI := claims["jti"].(string)
@@ -189,12 +210,16 @@ func (h *Handler) Introspect(ctx context.Context, req *proto.IntrospectRequest, 
 	}
 
 	claimsScopes := []string{}
-	for _, scopes := range claims["scopes"].([]interface{}) {
-		claimsScopes = append(claimsScopes, scopes.(string))
+	if claims["scopes"] != nil {
+		for _, scopes := range claims["scopes"].([]interface{}) {
+			claimsScopes = append(claimsScopes, scopes.(string))
+		}
 	}
 	claimsMetadata := map[string]string{}
-	for k, v := range claims["metadata"].(map[string]interface{}) {
-		claimsMetadata[k] = v.(string)
+	if claims["metadata"] != nil {
+		for k, v := range claims["metadata"].(map[string]interface{}) {
+			claimsMetadata[k] = v.(string)
+		}
 	}
 
 	rsp.Token = &proto.Token{
@@ -204,24 +229,29 @@ func (h *Handler) Introspect(ctx context.Context, req *proto.IntrospectRequest, 
 		Scopes:       claimsScopes,
 		Metadata:     claimsMetadata}
 	rsp.Active = true
+	rsp.ClientId = claimsClientID
 
 	return nil
 }
 
 // Refresh 刷新Token
 func (h *Handler) Refresh(ctx context.Context, req *proto.RefreshRequest, rsp *proto.RefreshResponse) error {
+	shopID, err0 := shopkey.FromCtx(ctx)
+	if err0 != nil {
+		return err0
+	}
 
-	record, err := db.ReadFormRefreshToken(req.ShopId, req.RefreshToken)
+	record, err := db.ReadFormRefreshToken(shopID, req.RefreshToken)
 	if err != nil {
 		return errors.Unauthorized("com.btdxcx.micro.srv.jwtauth", err.Error())
 	}
 
 	claims, err := parseToken(req.RefreshToken, record.Cipher)
 	if err != nil {
-		return errors.InternalServerError("com.btdxcx.micro.srv.jwtauth.Refresh", "token parse fault")
+		return errors.Unauthorized("com.btdxcx.micro.srv.jwtauth.Refresh", "token parse fault")
 	}
 	claimsShopID := claims["shop_id"].(string)
-	if claimsShopID != req.ShopId {
+	if claimsShopID != shopID {
 		return errors.Unauthorized("com.btdxcx.micro.srv.jwtauth.Refresh", "token invalid shopid[%s]", claimsShopID)
 	}
 	claimsJTI := claims["jti"].(string)
@@ -240,7 +270,7 @@ func (h *Handler) Refresh(ctx context.Context, req *proto.RefreshRequest, rsp *p
 	
 	accessClaims, err := parseToken(record.AccessToken, record.Cipher)
 	if accessClaims == nil && err != nil {
-		return errors.InternalServerError("com.btdxcx.micro.srv.jwtauth.Refresh", err.Error())
+		return errors.Unauthorized("com.btdxcx.micro.srv.jwtauth.Refresh", err.Error())
 	}
 	claimsScopes := []string{}
 	for _, scopes := range accessClaims["scopes"].([]interface{}) {
@@ -260,8 +290,8 @@ func (h *Handler) Refresh(ctx context.Context, req *proto.RefreshRequest, rsp *p
 	newRecord := &proto.Record{
 		Jti:          claimsJTI,
 		AccessToken:  accessToken }
-	if err := db.Update(req.ShopId, newRecord); err != nil {
-		return errors.InternalServerError("com.btdxcx.micro.srv.jwtauth.Refresh", err.Error())
+	if err := db.Update(shopID, newRecord); err != nil {
+		return errors.Unauthorized("com.btdxcx.micro.srv.jwtauth.Refresh", err.Error())
 	}
 
 	rsp.Token = &proto.Token{

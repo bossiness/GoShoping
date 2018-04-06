@@ -21,12 +21,23 @@ type KeyHandler struct{
 func (key *KeyHandler) Create(ctx context.Context, req *proto.KeyRequest, rsp *proto.KeyResponse) error {
 
 	uuid := req.Uuid
+	aesEnc := coding.AesEncrypt{}
+
+	if uuid == "center" {
+		byteTag, err := aesEnc.Encrypt(uuid)
+		if err != nil {
+			return errors.InternalServerError("com.btdxcx.micro.srv.shop.key.Create", err.Error())
+		}
+		rsp.Keys = &proto.ShopTagKeys{ Tagkeys: map[string]string{"center": hex.EncodeToString(byteTag)} }
+		return nil
+	}
+
 	if _, err :=  gouuid.FromString(uuid); err != nil {
 		return errors.BadRequest("com.btdxcx.micro.srv.shop.key.Create", err.Error())
 	}
 
 	tagKeys := map[string]string{}
-	aesEnc := coding.AesEncrypt{}
+	
 	for _, tag := range key.Tags {
 		tagUUID := tag + "@" + uuid
 		byteTag, err := aesEnc.Encrypt(tagUUID)
@@ -90,6 +101,10 @@ func introspectShopKey(tags []string, shopKey string) (string, string, error) {
 	if err2 != nil {
 		return "", "", errors.InternalServerError("com.btdxcx.micro.srv.shop.key.Introspect", err2.Error())
 	}
+	if clileID == "center" {
+		return clileID, "center", nil
+	}
+
 	ids := strings.Split(clileID, "@")
 
 	if len(ids) != 2 {

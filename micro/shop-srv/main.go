@@ -11,6 +11,7 @@ import (
 	"github.com/micro/go-micro"
 
 	proto "btdxcx.com/micro/shop-srv/proto/shop"
+	dproto "btdxcx.com/micro/shop-srv/proto/shop/details"
 )
 
 func main() {
@@ -43,6 +44,9 @@ func main() {
 	// Register Handler
 	keyHandler := &handler.KeyHandler{ Tags: []string{ "back", "mini" } }
 	proto.RegisterShopKeyHandler(service.Server(), keyHandler)
+
+	detailsHandler := &handler.DetailsHandler{}
+	dproto.RegisterShopHandler(service.Server(), detailsHandler)
 
 	// Initialise service
 	service.Init()

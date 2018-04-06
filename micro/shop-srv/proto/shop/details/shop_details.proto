@@ -1,0 +1,106 @@
+syntax = "proto3";
+
+package com.btdxcx.micro.srv.shop.details;
+
+service Shop {
+	rpc Create(CreateRequest) returns (CreateResponse) {}
+	rpc Read(ReadRequest) returns (ReadResponse) {}
+	rpc Delete (DeleteRequest) returns (DeleteResponse) {}
+    rpc List (ListRequest) returns (ListResponse);
+    rpc Update (UpdateRequest) returns (UpdateResponse);
+}
+
+message ShopDetails {
+
+    string name = 1;
+    string logo = 2;
+    string introduce = 3;
+
+    message ShopOwner {
+        string id = 1;
+        string name = 2;
+        string nickname = 3;
+        string phone = 4;
+    }
+
+    message MiniApp {
+        string id = 1;
+        string wechat_id = 2;
+    }
+
+    message PhysicalStore {
+        string id = 1;
+        string name = 2;
+        string contact = 3;
+        string email = 4;
+        string zipCode = 5;
+        string address = 6;
+
+        message Location {
+            double latitude = 1;
+            double longitude = 2;
+        }
+
+        Location location = 7;
+    }
+
+    ShopOwner owner = 4;
+    MiniApp mimi = 5;
+    PhysicalStore physical = 6;
+}
+
+message CreateRequest {
+    ShopDetails details = 1;
+}
+
+message CreateResponse {
+    string shop_id = 1;
+}
+
+message ReadRequest {
+    string shop_id = 1;
+}
+
+enum State {
+    untreated = 0;
+    reviewing = 1;
+    completed = 2;
+}
+
+message ReadResponse {
+    string shop_id = 1;
+    int64 create_at = 2;
+    int64 update_at = 3;
+    int64 period_at = 4;
+    int64 submit_at = 5;
+    State state = 6;
+    ShopDetails details = 7;
+}
+
+message DeleteRequest {
+    string shop_id = 1;
+}
+
+message DeleteResponse {
+}
+
+message ListRequest {
+    int32 limit = 1;
+    int32 start = 2;
+}
+
+message ListResponse {
+    int32 start = 1;
+    int32 limit = 2;
+    int32 total = 3;
+    repeated ReadResponse items = 4;
+}
+
+message UpdateRequest {
+    string shop_id = 1;
+    ShopDetails details = 2;
+    State state = 3;
+}
+
+message UpdateResponse {
+}

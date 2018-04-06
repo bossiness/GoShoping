@@ -60,7 +60,8 @@ message IntrospectRequest {
 
 message IntrospectResponse {
 	Token token = 1;
-	bool active = 2;
+	string client_id = 2;
+	bool active = 3;
 }
 
 message RefreshRequest {

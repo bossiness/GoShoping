@@ -47,11 +47,10 @@ func (s *shopkey) Call(ctx context.Context, req client.Request, rsp interface{},
 	}
 
 	// req.Request.Header
-	mdata := metadata.Metadata{
-		"X-SHOP-ID": introspect.Uuid,
-	}
+	md["X-SHOP-ID"] = introspect.Uuid
+	// delete(md, "X-SHOP-KEY")
 
-	newCtx := metadata.NewContext(ctx, mdata)
+	newCtx := metadata.NewContext(ctx, md)
 
 	return s.Client.Call(newCtx, req, rsp, opts...)
 }
@@ -81,9 +80,14 @@ func FromCtx(ctx context.Context) (string, error) {
 
 // NewNewContext new shop key context
 func NewNewContext(context context.Context, shopKEY string) context.Context {
-	
-	md := metadata.Metadata{
-		"X-SHOP-KEY": shopKEY,
+
+	md, ok := metadata.FromContext(context)
+	if !ok {
+		md = metadata.Metadata{
+			"X-SHOP-KEY": shopKEY,
+		}
+	} else {
+		md["X-SHOP-KEY"] = shopKEY
 	}
 	return metadata.NewContext(context, md)
 }

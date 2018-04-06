@@ -1,6 +1,7 @@
 package main
 
 import (
+	"btdxcx.com/center/api/shop-api"
 	"os"
 
 	"btdxcx.com/center/api/auth-api"
@@ -32,6 +33,7 @@ func setup(app *ccli.App) {
 func main() {
 	app := cmd.App()
 	app.Commands = append(app.Commands, authapi.Commands()...)
+	app.Commands = append(app.Commands, shopapi.Commands()...)
 	app.Action = func(context *ccli.Context) {
 		ccli.ShowAppHelp(context)
 	}

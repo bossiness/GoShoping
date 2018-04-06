@@ -1,6 +1,7 @@
 package authapi
 
 import (
+	"btdxcx.com/micro/shop-srv/wrapper/inspection/shop-key"
 	"github.com/micro/go-micro/errors"
 	"strings"
 	"github.com/satori/go.uuid"
@@ -19,8 +20,6 @@ import (
 )
 
 const (
-	apiServiceName = "com.btdxcx.center.api.auth"
-
 	srvAccountName = "com.btdxcx.micro.srv.account"
 	srvAuthName    = "com.btdxcx.micro.srv.jwtauth"
 )
@@ -28,6 +27,9 @@ const (
 var (
 	accountCl aproto.AccountClient
 	jwtauthCl jproto.JwtAuthClient
+
+	siteType = "center"
+	apiServiceName = "com.btdxcx.center.api.auth"
 )
 
 // Commands add auth api command
@@ -37,11 +39,27 @@ func Commands() []cli.Command {
 			Name:   "auth",
 			Usage:  "Run auth api",
 			Action: api,
+			Flags: []cli.Flag{
+				cli.StringFlag{
+					Name:   "api_service",
+					EnvVar: "MICRO_API_SERVICE",
+					Usage:  "API Service Name",
+				},
+				cli.StringFlag{
+					Name:   "site_type",
+					EnvVar: "MICRO_SITE_TYPE",
+					Usage:  "Site Type",
+				},
+			},
 		},
 	}
 }
 
 func api(ctx *cli.Context) {
+
+	apiServiceName = ctx.String("api_service")
+	siteType = ctx.String("site_type")
+	
 	service := web.NewService(
 		web.Name(apiServiceName),
 		web.RegisterTTL(
@@ -52,8 +70,10 @@ func api(ctx *cli.Context) {
 		),
 	)
 
-	accountCl = aproto.NewAccountClient(srvAccountName, client.DefaultClient)
-	jwtauthCl = jproto.NewJwtAuthClient(srvAuthName, client.DefaultClient)
+	wrapper := shopkey.NewClientWrapper("X-SHOP-KEY", siteType)
+
+	accountCl = aproto.NewAccountClient(srvAccountName, wrapper(client.DefaultClient))
+	jwtauthCl = jproto.NewJwtAuthClient(srvAuthName, wrapper(client.DefaultClient))
 
 	api := new(API)
 	ws := new(restful.WebService)
@@ -89,10 +109,8 @@ func (api *API) signin(req *restful.Request, rsp *restful.Response) {
 		return
 	}
 
-	ctx := req.Request.Context()
-
+	ctx := shopkey.NewNewContext(req.Request.Context(), req.HeaderParameter("X-SHOP-KEY"))
 	ain := &aproto.ReadRequest{
-		ShopId: "center",
 		ClientId: request.Username,
 	}
 	account, err2 := accountCl.Read(ctx, ain)
@@ -110,8 +128,7 @@ func (api *API) signin(req *restful.Request, rsp *restful.Response) {
 	jin := &jproto.TokenRequest{
 		ClientId: request.Username,
 		ClientSecrent: request.Password,
-		Scopes: []string{ "ROOT" },
-		ShopId: "center",
+		Scopes: []string{ siteType },
 	}
 	token, err4 := jwtauthCl.Token(ctx, jin)
 	if err4 != nil {
@@ -137,17 +154,18 @@ func (api *API) signup(req *restful.Request, rsp *restful.Response) {
 		return
 	}
 
-	ctx := req.Request.Context()
+	ctx := shopkey.NewNewContext(req.Request.Context(), req.HeaderParameter("X-SHOP-KEY"))
 
 	account := &aproto.Record{
 		Id: id.String(),
-		Type: "center",
+		Type: siteType,
 		ClientId: request.Username,
 		ClientSecret: request.Username,
 		Created: time.Now().Unix(),
 	}
 
-	ain := &aproto.CreateRequest{ ShopId: "center", Account: account }
+	ain := &aproto.CreateRequest{ 
+		Account: account }
 	_, err3 := accountCl.Create(ctx, ain)
 	if err3 != nil {
 		customerror.WriteError(err3, rsp)
@@ -157,8 +175,7 @@ func (api *API) signup(req *restful.Request, rsp *restful.Response) {
 	jin := &jproto.TokenRequest{
 		ClientId: request.Username,
 		ClientSecrent: request.Password,
-		Scopes: []string{ "ROOT" },
-		ShopId: "center",
+		Scopes: []string{ siteType },
 	}
 	token, err4 := jwtauthCl.Token(ctx, jin)
 	if err4 != nil {
@@ -185,10 +202,9 @@ func (api *API) signout(req *restful.Request, rsp *restful.Response) {
 		return
 	}
 
-	ctx := req.Request.Context()
+	ctx := shopkey.NewNewContext(req.Request.Context(), req.HeaderParameter("X-SHOP-KEY"))
 	in := &jproto.RevokeRequest{
 		AccessToken: bearer[1],
-		ShopId: "center",
 	}
 	if _, err := jwtauthCl.Revoke(ctx, in); err != nil {
 		rsp.WriteError(http.StatusBadRequest, err)

@@ -15,6 +15,7 @@ import (
 	"github.com/micro/go-web"
 
 	prtot "btdxcx.com/micro/taxons-srv/proto/imp"
+	jwrapper "btdxcx.com/micro/jwtauth-srv/wrapper"
 )
 
 // API is APIs
@@ -33,6 +34,9 @@ func (api *API) rootTaxons(req *restful.Request, rsp *restful.Response) {
 	log.Log("Received API.rootTaxons API request")
 
 	ctx := shopkey.NewNewContext(req.Request.Context(), req.HeaderParameter("X-SHOP-KEY"))
+	// ctx = jwrapper.NewContext(ctx, req.HeaderParameter("Authorization"))
+	ctx = jwrapper.NewContextCustomScope(ctx, "back")
+
 	response, err := cl.Root(ctx, &prtot.TaxonsShopIDRequest{})
 
 	if err != nil {
@@ -40,7 +44,7 @@ func (api *API) rootTaxons(req *restful.Request, rsp *restful.Response) {
 		return
 	}
 
-	rsp.WriteEntity(response)
+	rsp.WriteEntity(response.Children)
 }
 
 func (api *API) createTaxons(req *restful.Request, rsp *restful.Response) {
@@ -52,6 +56,7 @@ func (api *API) createTaxons(req *restful.Request, rsp *restful.Response) {
 	}
 
 	ctx := shopkey.NewNewContext(req.Request.Context(), req.HeaderParameter("X-SHOP-KEY"))
+	ctx = jwrapper.NewContext(ctx, req.HeaderParameter("Authorization"))
 	response, err := cl.Create(ctx, request)
 
 	if err != nil {
@@ -70,6 +75,7 @@ func (api *API) createChildren(req *restful.Request, rsp *restful.Response) {
 		return
 	}
 	ctx := shopkey.NewNewContext(req.Request.Context(), req.HeaderParameter("X-SHOP-KEY"))
+	ctx = jwrapper.NewContext(ctx, req.HeaderParameter("Authorization"))
 	request.Code = req.PathParameter("code")
 
 	response, err := cl.CreateChildren(ctx, request)
@@ -92,6 +98,7 @@ func (api *API) updateTaxons(req *restful.Request, rsp *restful.Response) {
 	request.Code = req.PathParameter("code")
 
 	ctx := shopkey.NewNewContext(req.Request.Context(), req.HeaderParameter("X-SHOP-KEY"))
+	ctx = jwrapper.NewContext(ctx, req.HeaderParameter("Authorization"))
 	response, err := cl.Update(ctx, request)
 
 	if err != nil {
@@ -107,6 +114,7 @@ func (api *API) deleteTaxons(req *restful.Request, rsp *restful.Response) {
 	code := req.PathParameter("code")
 
 	ctx := shopkey.NewNewContext(req.Request.Context(), req.HeaderParameter("X-SHOP-KEY"))
+	ctx = jwrapper.NewContext(ctx, req.HeaderParameter("Authorization"))
 	response, err := cl.Delete(ctx, &prtot.TasonsDeleteRequest{Code: code})
 
 	if err != nil {
@@ -139,8 +147,13 @@ func api(ctx *cli.Context) {
 
 	//	service.Init()
 
-	wrapper := shopkey.NewClientWrapper("X-SHOP-KEY", "back")
-	cl = prtot.NewTaxonsClient(clientName, wrapper(client.DefaultClient))
+	shopkeyWrapper := shopkey.NewClientWrapper("X-SHOP-KEY", "back")
+	tokenWrapper := jwrapper.NewClientWrapper("back")
+
+	cl = prtot.NewTaxonsClient(
+		clientName, 
+		shopkeyWrapper(tokenWrapper(client.DefaultClient)),
+	)
 
 	api := new(API)
 	ws := new(restful.WebService)
@@ -157,17 +170,6 @@ func api(ctx *cli.Context) {
 	ws.Route(ws.DELETE("/{code}").To(api.deleteTaxons))
 
 	wc.Add(ws)
-
-	// config := swagger.Config{
-	// 	WebServices:    wc.RegisteredWebServices(), // you control what services are visible
-	// 	WebServicesUrl: "http://localhost:8080",
-	// 	ApiPath:        "/taxons/apidocs.json",
-
-	// 	// Optionally, specify where the UI is located
-	// 	SwaggerPath:     "/taxons/apidocs/",
-	// 	SwaggerFilePath: "/Users/jigang.duan/xProjects/swagger-ui/dist",
-	// }
-	// swagger.RegisterSwaggerService(config, wc)
 
 	service.Handle("/", wc)
 
