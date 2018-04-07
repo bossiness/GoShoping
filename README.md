@@ -79,13 +79,13 @@ center-api --register_ttl=30 --register_interval=15 auth --api_service=com.btdxc
 - merchant
 
 ```bash
-center-api --register_ttl=30 --register_interval=15 auth --api_service=--namespace=com.btdxcx.merchant.api --site_type=back 1>>${logpath}/api/merchant/auth-info.log 2>>${logpath}/api/merchant/auth-error.log
+center-api --register_ttl=30 --register_interval=15 auth --api_service=com.btdxcx.merchant.api --site_type=back 1>>${logpath}/api/merchant/auth-info.log 2>>${logpath}/api/merchant/auth-error.log
 ```
 
 - applet
 
 ```bash
-center-api --register_ttl=30 --register_interval=15 auth --api_service=--namespace=com.btdxcx.applet.api --site_type=mini 1>>${logpath}/api/applet/auth-info.log 2>>${logpath}/api/applet/auth-error.log
+center-api --register_ttl=30 --register_interval=15 auth --api_service=com.btdxcx.applet.api --site_type=mini 1>>${logpath}/api/applet/auth-info.log 2>>${logpath}/api/applet/auth-error.log
 ```
 
 #### shops apis
