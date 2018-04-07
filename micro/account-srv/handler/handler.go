@@ -22,7 +22,7 @@ type Handler struct{}
 func (h *Handler) Read(ctx context.Context, req *proto.ReadRequest, rsp *proto.ReadResponse) error {
 	log.Log("Received Account.Read request")
 
-	shopID, err0 := shopkey.FromCtx(ctx)
+	shopID, err0 := shopkey.GetShopIDFrom(ctx, req.ShopId)
 	if err0 != nil {
 		return err0
 	}
@@ -40,7 +40,7 @@ func (h *Handler) Read(ctx context.Context, req *proto.ReadRequest, rsp *proto.R
 
 // Create account
 func (h *Handler) Create(ctx context.Context, req *proto.CreateRequest, rsp *proto.CreateResponse) error {
-	shopID, err0 := shopkey.FromCtx(ctx)
+	shopID, err0 := shopkey.GetShopIDFrom(ctx, req.ShopId)
 	if err0 != nil {
 		return err0
 	}
@@ -54,7 +54,7 @@ func (h *Handler) Create(ctx context.Context, req *proto.CreateRequest, rsp *pro
 
 // Update account
 func (h *Handler) Update(ctx context.Context, req *proto.UpdateRequest, rsp *proto.UpdateResponse) error {
-	shopID, err0 := shopkey.FromCtx(ctx)
+	shopID, err0 := shopkey.GetShopIDFrom(ctx, req.ShopId)
 	if err0 != nil {
 		return err0
 	}
@@ -67,7 +67,7 @@ func (h *Handler) Update(ctx context.Context, req *proto.UpdateRequest, rsp *pro
 
 // Delete account
 func (h *Handler) Delete(ctx context.Context, req *proto.DeleteRequest, rsp *proto.DeleteResponse) error {
-	shopID, err0 := shopkey.FromCtx(ctx)
+	shopID, err0 := shopkey.GetShopIDFrom(ctx, req.ShopId)
 	if err0 != nil {
 		return err0
 	}
@@ -80,7 +80,7 @@ func (h *Handler) Delete(ctx context.Context, req *proto.DeleteRequest, rsp *pro
 
 // Search account
 func (h *Handler) Search(ctx context.Context, req *proto.SearchRequest, rsp *proto.SearchResponse) error {
-	shopID, err0 := shopkey.FromCtx(ctx)
+	shopID, err0 := shopkey.GetShopIDFrom(ctx, req.ShopId)
 	if err0 != nil {
 		return err0
 	}
@@ -102,4 +102,3 @@ func (h *Handler) Search(ctx context.Context, req *proto.SearchRequest, rsp *pro
 	rsp.Accounts = *records
 	return nil
 }
-

@@ -78,6 +78,18 @@ func FromCtx(ctx context.Context) (string, error) {
 	return md["X-Shop-Id"], nil
 }
 
+// GetShopIDFrom from header get shop id
+func GetShopIDFrom(ctx context.Context, defID string) (string, error) {
+	sid, err := FromCtx(ctx)
+	if err != nil {
+		if len(defID) == 0 {
+			return "", err
+		}
+		return defID, nil
+	}
+	return sid, nil
+}
+
 // NewNewContext new shop key context
 func NewNewContext(context context.Context, shopKEY string) context.Context {
 
