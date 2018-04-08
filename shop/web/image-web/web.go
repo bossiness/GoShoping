@@ -4,9 +4,9 @@ import (
 	"github.com/micro/cli"
 	"github.com/micro/go-web"
 	"github.com/micro/go-log"
+	"github.com/gorilla/mux"
 
 	"time"
-	"net/http"
 )
 
 // Commands add auth api command
@@ -15,12 +15,12 @@ func Commands() []cli.Command {
 		{
 			Name:   "image",
 			Usage:  "Run image web",
-			Action: action,
+			Action: aweb,
 		},
 	}
 }
 
-func action(ctx *cli.Context) {
+func aweb(ctx *cli.Context) {
 
 	service := web.NewService(
 		web.Name("go.micro.web.image"),
@@ -32,19 +32,13 @@ func action(ctx *cli.Context) {
 		),
 	)
 
-	service.HandleFunc("/{imgid}", func(w http.ResponseWriter, r *http.Request) {
-		if r.Method == "GET" {
-			DownloadHandler(w, r)
-			return
-		}
-	})
-	service.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		if r.Method == "POST" {
-			UploadHandler(w, r)
-			return
-		}
-		HomeHandler(w, r)
-	})
+	r := mux.NewRouter()
+	r.Path("/image")
+	r.HandleFunc("/", HomeHandler).Methods("GET")
+	r.HandleFunc("/", UploadHandler).Methods("POST")
+	r.HandleFunc("/{imgid}", DownloadHandler).Methods("GET")
+
+	service.Handle("/", r)
 
 	LoadConf()
 
