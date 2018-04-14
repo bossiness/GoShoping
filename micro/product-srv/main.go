@@ -1,27 +1,31 @@
 package main
 
 import (
-	"btdxcx.com/micro/jwtauth-srv/db"
-	"btdxcx.com/micro/jwtauth-srv/db/mongodb"
-	"github.com/micro/cli"
+	"github.com/micro/go-micro/server"
+	"btdxcx.com/micro/product-srv/db"
+	"btdxcx.com/micro/product-srv/db/mongodb"
 	"time"
+	"github.com/micro/cli"
 	"github.com/micro/go-log"
 	"github.com/micro/go-micro"
-	"btdxcx.com/micro/jwtauth-srv/handler"
+	"btdxcx.com/micro/product-srv/handler"
+	"btdxcx.com/os/wrapper"
 
-	proto "btdxcx.com/micro/jwtauth-srv/proto/auth"
-
+	proto "btdxcx.com/micro/product-srv/proto/product"
 )
 
 func main() {
 	// New Service
 	service := micro.NewService(
-		micro.Name("com.btdxcx.micro.srv.jwtauth"),
+		micro.Server(
+			server.NewServer(server.WrapHandler(logwrapper.LogWrapper)),
+		),
+		micro.Name("com.btdxcx.micro.srv.product"),
 		micro.Version("v1"),
 		micro.RegisterTTL(time.Second*30),
 		micro.RegisterInterval(time.Second*15),
 		micro.Metadata(map[string]string{
-			"type": "jwtauth srv",
+			"type": "product srv",
 		}),
 
 		micro.Flags(
@@ -40,7 +44,9 @@ func main() {
 	)
 
 	// Register Handler
-	proto.RegisterJwtAuthHandler(service.Server(), new(handler.Handler))
+	proto.RegisterAttributeHandler(service.Server(), new(handler.AttributeHandler))
+	// proto.RegisterOptionHandler(service.Server(), new(handler.OptionHandler))
+	// proto.RegisterProductHandler(service.Server(), new(handler.Handler))
 
 	// Initialise service
 	service.Init()
@@ -49,6 +55,7 @@ func main() {
 	if err := db.Init(); err != nil {
 		log.Fatal(err)
 	}
+	defer db.Deinit()
 
 	// Run service
 	if err := service.Run(); err != nil {

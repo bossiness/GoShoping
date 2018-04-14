@@ -24,7 +24,7 @@ func main() {
 			server.NewServer(server.WrapHandler(wrapper.LogWrapper)),
 		),
 		micro.Name("com.btdxcx.shop.srv.taxons"),
-		micro.Version("latest"),
+		micro.Version("v1"),
 		micro.RegisterTTL(time.Second*30),
 		micro.RegisterInterval(time.Second*15),
 		micro.Metadata(map[string]string{

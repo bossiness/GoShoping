@@ -19,7 +19,7 @@ func main() {
 	// New Service
 	service := micro.NewService(
 		micro.Name("com.btdxcx.micro.srv.shop"),
-		micro.Version("latest"),
+		micro.Version("v1"),
 		micro.RegisterTTL(time.Second*30),
 		micro.RegisterInterval(time.Second*15),
 		micro.Metadata(map[string]string{

@@ -1,0 +1,622 @@
+syntax = "proto3";
+
+package com.btdxcx.micro.srv.product;
+
+service Attribute {
+	rpc CreateAttribute(CreateAttributeRequest) returns (CreateAttributeResponse) {}
+	rpc ReadAttributes(ReadAttributesRequest) returns (ReadAttributesResponse) {}
+	rpc ReadAttribute(ReadAttributeRequest) returns (ReadAttributeResponse) {}
+	rpc UpdateAttribute(UpdateAttributeRequest) returns (UpdateAttributeResponse) {}
+	rpc DeleteAttribute(DeleteAttributeRequest) returns (DeleteAttributeResponse) {}
+}
+
+message CreateAttributeRequest {
+	string shop_id = 1;
+	AttributesRecord record = 2;
+}
+
+message CreateAttributeResponse {
+	AttributesRecord record = 1; 
+}
+
+message ReadAttributesRequest {
+	string shop_id = 1;
+	int32 offset = 2;
+	int32 limit = 3;
+}
+
+message ReadAttributesResponse {
+	int32 offset = 1;
+	int32 limit = 2;
+	int32 total = 3;
+
+	repeated AttributesRecord records = 4;
+}
+
+message ReadAttributeRequest {
+	string shop_id = 1;
+	string code = 2;
+}
+
+message ReadAttributeResponse {
+	AttributesRecord record = 1;
+}
+
+message UpdateAttributeRequest {
+	string shop_id = 1;
+	AttributesRecord record = 2;
+}
+
+message UpdateAttributeResponse {
+	AttributesRecord record = 1;
+}
+
+message DeleteAttributeRequest {
+	string shop_id = 1;
+	string code = 2;
+}
+
+message DeleteAttributeResponse {
+}
+
+message AttributesRecord {
+	string code = 1;
+	string type = 2;
+	repeated string configuration = 3;
+	int64 updated_at = 4;
+	int64 created_at = 5;
+}
+
+service Option {
+	rpc CreateOption(CreateOptionRequest) returns (CreateOptionResponse) {}
+	rpc ReadOptions(ReadOptionsRequest) returns (ReadOptionsResponse) {}
+	rpc ReadOption(ReadOptionequest) returns (ReadOptionResponse) {}
+	rpc UpdateOption(UpdateOptionRequest) returns (UpdateOptionResponse) {}
+	rpc DeleteOption(DeleteOptionRequest) returns (DeleteOptionResponse) {}
+}
+
+message CreateOptionRequest {
+	string shop_id = 1;
+	OptionRecord record = 2;
+}
+
+message CreateOptionResponse {
+	OptionRecord record = 1;
+}
+
+message ReadOptionsRequest {
+	string shop_id = 1;
+	int32 offset = 2;
+	int32 limit = 3;
+}
+
+message ReadOptionsResponse {
+	int32 offset = 1;
+	int32 limit = 2;
+	int32 total = 3;
+
+	repeated OptionRecord records = 4;
+}
+
+message ReadOptionequest {
+	int32 offset = 1;
+	string code = 2;
+}
+
+message ReadOptionResponse {
+	OptionRecord record = 1;
+}
+
+message UpdateOptionRequest {
+	int32 offset = 1;
+	string code = 2;
+	OptionRecord record = 3;
+}
+
+message UpdateOptionResponse {
+	OptionRecord record = 1;
+}
+
+message DeleteOptionRequest {
+	int32 offset = 1;
+	string code = 2;
+}
+
+message DeleteOptionResponse {
+}
+
+message OptionRecord {
+	string code = 1;
+	repeated OptionValue options = 2;
+	int64 updated_at = 3;
+	int64 created_at = 4;
+
+	message OptionValue {
+		string value = 1;
+		string description = 2;
+	}
+}
+
+
+service Product {
+	rpc CreateProduct(CreateProductRequest) returns (CreateProductResponse) {}
+	rpc ReadProducts(ReadProductsRequest) returns (ReadProductsResponse) {}
+	rpc ReadProduct(ReadProductRequest) returns (ReadProductResponse) {}
+	rpc UpdateProduct(UpdateProductRequest) returns (UpdateProductResponse) {}
+	rpc DeleteProduct(DeleteProductRequest) returns (DeleteProductResponse) {}
+
+	rpc ModifyProductTaxons (ModifyTaxonsRequest) returns (ModifyTaxonsResponse);
+
+	rpc CreateProductAttribute(CreateProductAttributeRequest) returns (CreateProductAttributeResponse) {}
+	rpc ReadProductAttributes(ReadProductAttributesRequest) returns (ReadProductAttributesResponse) {}
+	rpc UpdateProductAttribute(UpdateProductAttributeRequest) returns (UpdateProductAttributeResponse) {}
+	rpc DeleteProductAttribute(DeleteProductAttributeRequest) returns (DeleteProductAttributeResponse) {}
+
+	rpc CreateProductAssociation(CreateProductAssociationRequest) returns (CreateProductAssociationResponse) {}
+	rpc ReadProductAssociations(ReadProductAssociationsRequest) returns (ReadProductAssociationsResponse) {}
+	rpc UpdateProductAssociation(UpdateProductAssociationRequest) returns (UpdateProductAssociationResponse) {}
+	rpc DeleteProductAssociation(DeleteProductAssociationRequest) returns (DeleteProductAssociationResponse) {}
+
+	rpc CreateProductImage(CreateProductImageRequest) returns (CreateProductImageResponse) {}
+	rpc ReadProductImages(ReadProductImagesRequest) returns (ReadProductImagesResponse) {}
+	rpc UpdateProductImage(UpdateProductImageRequest) returns (UpdateProductImageResponse) {}
+	rpc DeleteProductImage(DeleteProductImageRequest) returns (DeleteProductImageResponse) {}
+
+	rpc CreateProductReview(CreateProductReviewRequest) returns (CreateProductReviewResponse) {}
+	rpc ReadProductReviews(ReadProductReviewsRequest) returns (ReadProductReviewsResponse) {}
+	rpc ReadProductReview(ReadProductReviewRequest) returns (ReadProductReviewResponse) {}
+	rpc UpdateProductReview(UpdateProductReviewRequest) returns (UpdateProductReviewResponse) {}
+	rpc DeleteProductReview(DeleteProductReviewRequest) returns (DeleteProductReviewResponse) {}
+	rpc AcceptProductReview (AcceptProductReviewRequest) returns (AcceptProductReviewResponse);
+	rpc RejectProductReview (RejectProductReviewRequest) returns (RejectProductReviewResponse);
+
+	rpc CreateProductOption (CreateProductOptionRequest) returns (CreateProductOptionesponse) {}
+	rpc ReadProductOptions (ReadProductOptionsRequest) returns (ReadProductOptionsResponse) {}
+	rpc UpdateProductOption (UpdateProductOptionRequest) returns (UpdateProductOptionResponse) {}
+	rpc DeleteProductOption (DeleteProductOptionRequest) returns (DeleteProductOptionResponse) {}
+
+	rpc CreateProductVariant (CreateProductVariantRequest) returns (CreateProductVariantReponse) {}
+	rpc ReadProductVariants (ReadProductVariantsRequest) returns (ReadProductVariantsResponse) {}
+	rpc ReadProductVariant (ReadProductVariantRequest) returns (ReadProductVariantResponse) {}
+	rpc UpdateProductVariant (UpdateProductVariantRequest) returns (UpdateProductVariantResponse) {}
+	rpc DeleteProductVariant (DeleteProductVariantRequest) returns (DeleteProductVariantResponse) {}
+
+}
+
+message CreateProductRequest {
+	string shop_id = 1;
+	ProductRecord record = 2;
+}
+
+message CreateProductResponse {
+	ProductRecord record = 1;
+}
+
+message ReadProductsRequest {
+	string shop_id = 1;
+	int32 offset = 2;
+	int32 limit = 3;
+}
+
+message ReadProductsResponse {
+	int32 offset = 1;
+	int32 limit = 2;
+	int32 total = 3;
+
+	repeated ProductRecord records = 4;
+}
+
+message ReadProductRequest {
+	string shop_id = 1;
+	string spu = 2;
+}
+
+message ReadProductResponse {
+	ProductRecord record = 1;
+}
+
+message UpdateProductRequest {
+	string shop_id = 1;
+	string spu = 2;
+	ProductRecord record = 3;
+}
+
+message UpdateProductResponse {
+	ProductRecord record = 1;
+}
+
+message DeleteProductRequest {
+	string shop_id = 1;
+	string spu = 2;
+}
+
+message DeleteProductResponse {
+}
+
+message ProductRecord {
+	string spu = 1;
+	string name = 2;
+	string description = 3;
+	string mainTaxon = 4;
+	repeated string productTaxons = 5;
+	int64 updated_at = 6;
+	int64 created_at = 7;
+	repeated Association associations = 9;
+	repeated Image images = 10;
+
+	repeated AttributesRecord attributes = 11;
+	repeated OptionRecord options = 12;
+	repeated VariantRecord variants = 13;
+	repeated ReviewsRecord reviews = 14;
+
+	message AttributesRecord {
+		string code = 1;
+		string type = 2;
+		repeated string configuration = 3;
+		string value = 4;
+	}
+
+	message Association {
+		string code = 1;
+		repeated string spus = 2;
+	}
+
+	message OptionRecord {
+		string code = 1;
+		repeated OptionValue options = 2;
+		string value = 3;
+		
+		message OptionValue {
+			string value = 1;
+			string description = 2;
+		}
+	}
+
+}
+
+message Image {
+	string type = 2;
+	repeated string paths = 3;
+}
+
+message ReviewsRecord {
+	string id = 1;
+	string title = 2;
+	string comment = 3;
+	int32 rating = 4;
+	Author author = 5;
+	string status = 6;
+	int64 updated_at = 7;
+	int64 created_at = 8;
+
+	message Author {
+		string username = 1;
+		string nick = 2;
+	}
+}
+
+message VariantRecord {
+	string sku = 1;
+	string name = 2;
+	Pricing pricings = 3;
+	bool tracked = 4;
+	string shippingCategory = 5;
+	repeated string optionValues = 6;
+	int32 stock = 7;
+	repeated Image images = 8;
+	int64 updated_at = 9;
+	int64 created_at = 10;
+	
+	message Pricing {
+		int32 current = 1;
+	}
+}
+
+message ModifyTaxonsRequest {
+	string shop_id = 1;
+	string spu = 2;
+	ProductTaxon taxons = 3;
+}
+
+message ProductTaxon {
+	string main = 1;
+	repeated string others = 2;
+}
+
+message ModifyTaxonsResponse {
+	ProductTaxon taxons = 1;
+}
+
+message CreateProductAttributeRequest {
+	string shop_id = 1;
+	string spu = 2;
+
+	ProductAttribute attribute = 3;
+}
+
+message CreateProductAttributeResponse {
+	ProductAttribute attribute = 1;
+}
+
+message ReadProductAttributesRequest {
+	string shop_id = 1;
+	string spu = 2;
+}
+
+message ReadProductAttributesResponse {
+	repeated ProductAttribute attributes = 1;
+}
+
+message UpdateProductAttributeRequest {
+	string shop_id = 1;
+	string spu = 2;
+	string code = 3;
+	string value = 4;
+}
+
+message UpdateProductAttributeResponse {
+	ProductAttribute attribute = 1;
+}
+
+message DeleteProductAttributeRequest {
+	string shop_id = 1;
+	string spu = 2;
+	string code = 3;
+}
+
+message DeleteProductAttributeResponse {
+}
+
+message ProductAttribute {
+	string code = 1;
+	string value = 2;
+}
+
+message CreateProductAssociationRequest {
+	string shop_id = 1;
+	string spu = 2;
+	ProductAssociation association = 3;
+}
+
+message CreateProductAssociationResponse {
+	ProductAssociation association = 1;
+}
+
+message ReadProductAssociationsRequest {
+	string shop_id = 1;
+	string spu = 2;
+}
+
+message ReadProductAssociationsResponse {
+	repeated ProductAssociation association = 1;
+}
+
+message UpdateProductAssociationRequest {
+	string shop_id = 1;
+	string spu = 2;
+	string code = 3;
+	ProductAssociation association = 4;
+}
+
+message UpdateProductAssociationResponse {
+	ProductAssociation association = 1;
+}
+
+message DeleteProductAssociationRequest {
+	string shop_id = 1;
+	string spu = 2;
+	string code = 3;
+}
+
+message DeleteProductAssociationResponse {
+}
+
+message ProductAssociation {
+	string code = 1;
+	repeated string spus = 2;
+}
+
+message CreateProductImageRequest {
+	string shop_id = 1;
+	string spu = 2;
+	
+	Image image = 3;
+}
+
+message CreateProductImageResponse {
+	Image image = 1;
+}
+
+message ReadProductImagesRequest {
+	string shop_id = 1;
+	string spu = 2;
+}
+
+message ReadProductImagesResponse {
+	repeated Image images = 1;
+}
+
+message UpdateProductImageRequest {
+	string shop_id = 1;
+	string spu = 2;
+
+	Image image = 3;
+}
+
+message UpdateProductImageResponse {
+	Image image = 1;
+}
+
+message DeleteProductImageRequest {
+	string shop_id = 1;
+	string spu = 2;
+	string type = 3;
+}
+
+message DeleteProductImageResponse {}
+
+message CreateProductReviewRequest {
+	string shop_id = 1;
+	string spu = 2;
+
+	ReviewsRecord record = 3;
+}
+
+message CreateProductReviewResponse {
+	ReviewsRecord record = 1;
+}
+
+message ReadProductReviewsRequest {
+	string shop_id = 1;
+	string spu = 2;
+	int32 offset = 3;
+	int32 limit = 4;
+}
+
+message ReadProductReviewsResponse {
+	int32 offset = 1;
+	int32 limit = 2;
+	int32 total = 3;
+
+	repeated ReviewsRecord records = 4;
+}
+
+message ReadProductReviewRequest {
+	string shop_id = 1;
+	string spu = 2;
+	string id = 3;
+}
+
+message ReadProductReviewResponse {
+	ReviewsRecord record = 1;
+}
+
+message UpdateProductReviewRequest {
+	string shop_id = 1;
+	string spu = 2;
+	string id = 3;
+
+	ReviewsRecord record = 4;
+}
+
+message UpdateProductReviewResponse {
+	ReviewsRecord record = 1;
+}
+
+message DeleteProductReviewRequest {
+	string shop_id = 1;
+	string spu = 2;
+	string id = 3;
+}
+
+message DeleteProductReviewResponse {}
+
+message AcceptProductReviewRequest {
+	string shop_id = 1;
+	string spu = 2;
+	string id = 3;
+}
+
+message AcceptProductReviewResponse {}
+
+message RejectProductReviewRequest {
+	string shop_id = 1;
+	string spu = 2;
+	string id = 3;
+}
+
+message RejectProductReviewResponse {}
+
+message CreateProductOptionRequest {
+	string shop_id = 1;
+	string spu = 2;
+
+	ProductOption option = 3;
+}
+
+message ProductOption {
+	string code = 1;
+	string value = 2;
+}
+
+message CreateProductOptionesponse {
+	ProductOption option = 1;
+}
+
+message ReadProductOptionsRequest {
+	string shop_id = 1;
+	string spu = 2;
+}
+
+message ReadProductOptionsResponse {
+	repeated ProductOption options = 1;
+}
+
+message UpdateProductOptionRequest {
+	string shop_id = 1;
+	string spu = 2;
+
+	ProductOption option = 3;
+}
+
+message UpdateProductOptionResponse {
+	ProductOption option = 1;
+}
+
+message DeleteProductOptionRequest {
+	string shop_id = 1;
+	string spu = 2;
+	string code = 3;
+}
+
+message DeleteProductOptionResponse {}
+
+message CreateProductVariantRequest {
+	string shop_id = 1;
+	string spu = 2;
+
+	VariantRecord record = 3;
+}
+
+message CreateProductVariantReponse {
+	VariantRecord record = 1;
+}
+
+message ReadProductVariantsRequest {
+	string shop_id = 1;
+	string spu = 2;
+}
+
+message ReadProductVariantsResponse {
+	repeated VariantRecord records = 1;
+}
+
+message ReadProductVariantRequest {
+	string shop_id = 1;
+	string spu = 2;
+	string sku = 3;
+}
+
+message ReadProductVariantResponse {
+	VariantRecord record = 1;
+}
+
+message UpdateProductVariantRequest {
+	string shop_id = 1;
+	string spu = 2;
+	string sku = 3;
+
+	VariantRecord record = 4;
+}
+
+message UpdateProductVariantResponse {
+	VariantRecord record = 1;
+}
+
+message DeleteProductVariantRequest {
+	string shop_id = 1;
+	string spu = 2;
+	string sku = 3;
+}
+
+message DeleteProductVariantResponse {}

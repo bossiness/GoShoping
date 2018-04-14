@@ -81,13 +81,13 @@ func FromCtx(ctx context.Context) (string, error) {
 // GetShopIDFrom from header get shop id
 func GetShopIDFrom(ctx context.Context, defID string) (string, error) {
 	sid, err := FromCtx(ctx)
-	if err != nil {
-		if len(defID) == 0 {
-			return "", err
-		}
-		return defID, nil
+	if err == nil {
+		return sid, nil
 	}
-	return sid, nil
+	if len(defID) == 0 {
+			return "", err
+	}
+	return defID, nil
 }
 
 // NewNewContext new shop key context
