@@ -50,6 +50,13 @@ func (m *Mongo) Init() error {
 	return nil
 }
 
+// Deinit 资源释放
+func (m *Mongo) Deinit() {
+	if m.session != nil {
+		m.session.Close()
+	}
+}
+
 // Read Account
 func (m *Mongo) Read(dbName string, clientID string) (*proto.Record, error) {
 

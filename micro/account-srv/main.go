@@ -50,6 +50,7 @@ func main() {
 	if err := db.Init(); err != nil {
 		log.Fatal(err)
 	}
+	defer db.Deinit()
 
 	// Run service
 	if err := service.Run(); err != nil {

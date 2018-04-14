@@ -7,6 +7,7 @@ import (
 // DB is 数据库接口
 type DB interface {
 	Init() error
+	Deinit()
 	Account
 }
 
@@ -31,6 +32,11 @@ func Register(backend DB) {
 // Init 数据库初始化
 func Init() error {
 	return db.Init()
+}
+
+// Deinit 析构
+func Deinit()  {
+	db.Deinit()
 }
 
 // Read Account
