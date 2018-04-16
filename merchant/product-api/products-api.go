@@ -48,7 +48,36 @@ func apis(ctx *cli.Context) {
 	ws.Produces(restful.MIME_JSON, restful.MIME_XML)
 	ws.Path("/products")
 
-	ws.Route(ws.POST("").To(api.noop))
+	ws.Route(ws.POST("").To(api.createProduct))
+	ws.Route(ws.GET("").To(api.fetchProducts))
+	ws.Route(ws.GET("/{spu}").To(api.fetchProduct))
+	ws.Route(ws.PATCH("/{spu}").To(api.modifyProduct))
+	ws.Route(ws.PATCH("/{spu}/taxons").To(api.modifyTaxons))
+
+	ws.Route(ws.POST("/{spu}/attributes").To(api.createProductAttribute))
+	ws.Route(ws.PUT("/{spu}/attributes/{code}").To(api.updateProductAttribute))
+	ws.Route(ws.DELETE("/{spu}/attributes/{code}").To(api.deleteProductAttribute))
+
+	ws.Route(ws.POST("/{spu}/associations").To(api.createProductAssociation))
+	ws.Route(ws.PUT("/{spu}/associations/{code}").To(api.noop))
+	ws.Route(ws.DELETE("/{spu}/associations/{code}").To(api.noop))
+
+	ws.Route(ws.POST("/{spu}/images").To(api.noop))
+	ws.Route(ws.PUT("/{spu}/images/{code}").To(api.noop))
+	ws.Route(ws.DELETE("/{spu}/images/{code}").To(api.noop))
+
+	ws.Route(ws.POST("/{spu}/reviews").To(api.noop))
+	ws.Route(ws.GET("/{spu}/reviews").To(api.noop))
+	ws.Route(ws.PUT("/{spu}/reviews/{id}").To(api.noop))
+	ws.Route(ws.DELETE("/{spu}/reviews/{id}").To(api.noop))
+	ws.Route(ws.PATCH("/{spu}/reviews/{id}/accept").To(api.noop))
+	ws.Route(ws.PATCH("/{spu}/reviews/{id}/reject").To(api.noop))
+
+	ws.Route(ws.POST("/{spu}/variants").To(api.noop))
+	ws.Route(ws.GET("/{spu}/variants").To(api.noop))
+	ws.Route(ws.GET("/{spu}/variants/{sku}").To(api.noop))
+	ws.Route(ws.PUT("/{spu}/variants/{sku}").To(api.noop))
+	ws.Route(ws.DELETE("/{spu}/variants/{sku}").To(api.noop))
 
 	wc.Add(ws)
 	service.Handle("/", wc)
@@ -60,3 +89,4 @@ func apis(ctx *cli.Context) {
 
 func (api *API) noop(req *restful.Request, rsp *restful.Response) {
 }
+
