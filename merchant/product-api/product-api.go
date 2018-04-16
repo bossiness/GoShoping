@@ -27,20 +27,6 @@ var (
 	optionCl proto.OptionClient
 )
 
-// API is APIs
-type API struct{}
-
-// Commands add command
-func Commands() []cli.Command {
-	return []cli.Command{
-		{
-			Name:   "product",
-			Usage:  "Run product api",
-			Action: api,
-		},
-	}
-}
-
 func api(ctx *cli.Context) {
 	service := web.NewService(
 		web.Name(serviceName),

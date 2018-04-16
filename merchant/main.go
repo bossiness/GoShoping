@@ -31,7 +31,7 @@ func setup(app *ccli.App) {
 
 func main() {
 	app := cmd.App()
-	app.Commands = append(app.Commands, taxonsapi.Commands()...)
+	app.Commands = append(app.Commands, productapi.Commands(),taxonsapi.Commands()...)
 	app.Action = func(context *ccli.Context) {
 		ccli.ShowAppHelp(context)
 	}
