@@ -99,7 +99,7 @@ message ReadOptionsResponse {
 }
 
 message ReadOptionequest {
-	int32 offset = 1;
+	string shop_id = 1;
 	string code = 2;
 }
 
@@ -108,7 +108,7 @@ message ReadOptionResponse {
 }
 
 message UpdateOptionRequest {
-	int32 offset = 1;
+	string shop_id = 1;
 	string code = 2;
 	OptionRecord record = 3;
 }
@@ -118,7 +118,7 @@ message UpdateOptionResponse {
 }
 
 message DeleteOptionRequest {
-	int32 offset = 1;
+	string shop_id = 1;
 	string code = 2;
 }
 
@@ -344,7 +344,7 @@ message ReadProductAttributesRequest {
 }
 
 message ReadProductAttributesResponse {
-	repeated ProductAttribute attributes = 1;
+	repeated ProductRecord.AttributesRecord attributes = 1;
 }
 
 message UpdateProductAttributeRequest {
@@ -549,7 +549,7 @@ message ReadProductOptionsRequest {
 }
 
 message ReadProductOptionsResponse {
-	repeated ProductOption options = 1;
+	repeated ProductRecord.OptionRecord options = 1;
 }
 
 message UpdateProductOptionRequest {

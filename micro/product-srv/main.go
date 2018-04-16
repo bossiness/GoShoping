@@ -45,8 +45,8 @@ func main() {
 
 	// Register Handler
 	proto.RegisterAttributeHandler(service.Server(), new(handler.AttributeHandler))
-	// proto.RegisterOptionHandler(service.Server(), new(handler.OptionHandler))
-	// proto.RegisterProductHandler(service.Server(), new(handler.Handler))
+	proto.RegisterOptionHandler(service.Server(), new(handler.OptionHandler))
+	proto.RegisterProductHandler(service.Server(), new(handler.Handler))
 
 	// Initialise service
 	service.Init()

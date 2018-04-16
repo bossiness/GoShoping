@@ -31,14 +31,10 @@ const (
 )
 
 func (api *API) rootTaxons(req *restful.Request, rsp *restful.Response) {
-	log.Log("Received API.rootTaxons API request")
-
 	ctx := shopkey.NewNewContext(req.Request.Context(), req.HeaderParameter("X-SHOP-KEY"))
-	// ctx = jwrapper.NewContext(ctx, req.HeaderParameter("Authorization"))
 	ctx = jwrapper.NewContextCustomScope(ctx, "back")
 
 	response, err := cl.Root(ctx, &prtot.TaxonsShopIDRequest{})
-
 	if err != nil {
 		writeError(err, rsp)
 		return
@@ -51,7 +47,7 @@ func (api *API) createTaxons(req *restful.Request, rsp *restful.Response) {
 
 	request := new(prtot.TasonsCreateRequest)
 	if err := req.ReadEntity(&request); err != nil {
-		rsp.WriteErrorString(http.StatusInternalServerError, err.Error())
+		rsp.WriteError(http.StatusBadRequest, err)
 		return
 	}
 
@@ -71,7 +67,7 @@ func (api *API) createChildren(req *restful.Request, rsp *restful.Response) {
 
 	request := new(prtot.TaxonsRequest)
 	if err := req.ReadEntity(&request); err != nil {
-		rsp.WriteErrorString(http.StatusInternalServerError, err.Error())
+		rsp.WriteError(http.StatusBadRequest, err)
 		return
 	}
 	ctx := shopkey.NewNewContext(req.Request.Context(), req.HeaderParameter("X-SHOP-KEY"))
@@ -85,14 +81,16 @@ func (api *API) createChildren(req *restful.Request, rsp *restful.Response) {
 		return
 	}
 
-	rsp.WriteEntity(response)
+	if err := rsp.WriteEntity(response); err != nil {
+		rsp.WriteError(http.StatusInternalServerError, err)
+	}
 }
 
 func (api *API) updateTaxons(req *restful.Request, rsp *restful.Response) {
 
 	request := new(prtot.TaxonsRequest)
 	if err := req.ReadEntity(&request); err != nil {
-		rsp.WriteErrorString(http.StatusInternalServerError, err.Error())
+		rsp.WriteError(http.StatusBadRequest, err)
 		return
 	}
 	request.Code = req.PathParameter("code")
@@ -106,7 +104,9 @@ func (api *API) updateTaxons(req *restful.Request, rsp *restful.Response) {
 		return
 	}
 
-	rsp.WriteEntity(response)
+	if err := rsp.WriteEntity(response); err != nil {
+		rsp.WriteError(http.StatusInternalServerError, err)
+	}
 }
 
 func (api *API) deleteTaxons(req *restful.Request, rsp *restful.Response) {
@@ -122,7 +122,9 @@ func (api *API) deleteTaxons(req *restful.Request, rsp *restful.Response) {
 		return
 	}
 
-	rsp.WriteEntity(response)
+	if err := rsp.WriteEntity(response); err != nil {
+		rsp.WriteError(http.StatusInternalServerError, err)
+	}
 }
 
 func writeError(err error, rsp *restful.Response) {
