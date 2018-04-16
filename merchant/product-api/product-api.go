@@ -109,7 +109,7 @@ func (api *API) readAttributes(req *restful.Request, rsp *restful.Response) {
 	if err1 != nil {
 		rsp.WriteError(
 			http.StatusBadRequest, 
-			errors.BadRequest(serviceName, "query parameter limit error: %s", err1.Error()),
+			errors.BadRequest(serviceName, "query parameter offset error: %s", err1.Error()),
 		)
 		return
 	}
