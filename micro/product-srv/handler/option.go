@@ -74,7 +74,7 @@ func (o *OptionHandler) UpdateOption(ctx context.Context, req *proto.UpdateOptio
 
 	err := db.UpdateOption(shopID, req.Code, req.Record)
 	if err != nil {
-		return errors.NotFound(svrName + ".ReadOption", err.Error())
+		return errors.NotFound(svrName + ".UpdateOption", err.Error())
 	}
 
 	rsp.Record = req.Record

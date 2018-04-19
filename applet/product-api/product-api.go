@@ -50,7 +50,7 @@ func api(ctx *cli.Context) {
 		),
 	)
 
-	shopkeyWrapper := shopkey.NewClientWrapper("X-SHOP-KEY", "back")
+	shopkeyWrapper := shopkey.NewClientWrapper("X-SHOP-KEY", "mini")
 
 	productCl = proto.NewProductClient(
 		clientName,

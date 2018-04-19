@@ -120,19 +120,11 @@ func (api *API) fetchProducts(req *restful.Request, rsp *restful.Response) {
 	in := new(proto.ReadProductsRequest)
 	offset, err1 := strconv.Atoi(req.QueryParameter("offset"))
 	if err1 != nil {
-		rsp.WriteError(
-			http.StatusBadRequest, 
-			errors.BadRequest(srvName, "query parameter limit error: %s", err1.Error()),
-		)
-		return
+		offset = 0
 	}
 	limit, err2 := strconv.Atoi(req.QueryParameter("limit"))
 	if err2 != nil {
-		rsp.WriteError(
-			http.StatusBadRequest, 
-			errors.BadRequest(srvName, "query parameter limit error %s", err2.Error()),
-		)
-		return
+		limit = 20
 	}
 	in.Offset = int32(offset)
 	in.Limit = int32(limit)

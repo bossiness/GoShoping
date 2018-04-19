@@ -84,10 +84,12 @@ func (api *API) createAttribute(req *restful.Request, rsp *restful.Response) {
 	ctx = jwrapper.NewContext(ctx, req.HeaderParameter("Authorization"))
 
 	in := new(proto.CreateAttributeRequest)
-	if err := req.ReadEntity(&in); err != nil {
+	record := new(proto.AttributesRecord)
+	if err := req.ReadEntity(&record); err != nil {
 		rsp.WriteError(http.StatusBadRequest, err)
 		return
 	}
+	in.Record = record
 
 	out, err := attributeCl.CreateAttribute(ctx, in)
 	if err != nil {
@@ -95,7 +97,7 @@ func (api *API) createAttribute(req *restful.Request, rsp *restful.Response) {
 		return
 	}
 
-	if err := rsp.WriteEntity(out); err != nil {
+	if err := rsp.WriteEntity(out.Record); err != nil {
 		rsp.WriteError(http.StatusInternalServerError, err)
 	}
 }
@@ -107,19 +109,11 @@ func (api *API) readAttributes(req *restful.Request, rsp *restful.Response) {
 	in := new(proto.ReadAttributesRequest)
 	offset, err1 := strconv.Atoi(req.QueryParameter("offset"))
 	if err1 != nil {
-		rsp.WriteError(
-			http.StatusBadRequest, 
-			errors.BadRequest(serviceName, "query parameter offset error: %s", err1.Error()),
-		)
-		return
+		offset = 0
 	}
 	limit, err2 := strconv.Atoi(req.QueryParameter("limit"))
 	if err2 != nil {
-		rsp.WriteError(
-			http.StatusBadRequest, 
-			errors.BadRequest(serviceName, "query parameter limit error %s", err2.Error()),
-		)
-		return
+		limit = 20
 	}
 	in.Offset = int32(offset)
 	in.Limit = int32(limit)
@@ -151,7 +145,7 @@ func (api *API) readAttribute(req *restful.Request, rsp *restful.Response) {
 		customerror.WriteError(err, rsp)
 		return
 	}
-	if err := rsp.WriteEntity(out); err != nil {
+	if err := rsp.WriteEntity(out.Record); err != nil {
 		rsp.WriteError(http.StatusInternalServerError, err)
 	}
 }
@@ -179,7 +173,7 @@ func (api *API) updateAttribute(req *restful.Request, rsp *restful.Response) {
 		customerror.WriteError(err, rsp)
 		return
 	}
-	if err := rsp.WriteEntity(out); err != nil {
+	if err := rsp.WriteEntity(out.Record); err != nil {
 		rsp.WriteError(http.StatusInternalServerError, err)
 	}
 }
@@ -211,10 +205,12 @@ func (api *API) createOption(req *restful.Request, rsp *restful.Response) {
 	ctx = jwrapper.NewContext(ctx, req.HeaderParameter("Authorization"))
 
 	in := new(proto.CreateOptionRequest)
-	if err := req.ReadEntity(&in); err != nil {
+	record := new(proto.OptionRecord)
+	if err := req.ReadEntity(&record); err != nil {
 		rsp.WriteError(http.StatusBadRequest, err)
 		return
 	}
+	in.Record = record
 
 	out, err := optionCl.CreateOption(ctx, in)
 	if err != nil {
@@ -222,7 +218,7 @@ func (api *API) createOption(req *restful.Request, rsp *restful.Response) {
 		return
 	}
 
-	if err := rsp.WriteEntity(out); err != nil {
+	if err := rsp.WriteEntity(out.Record); err != nil {
 		rsp.WriteError(http.StatusInternalServerError, err)
 	}
 }
@@ -234,19 +230,11 @@ func (api *API) readOptions(req *restful.Request, rsp *restful.Response) {
 	in := new(proto.ReadOptionsRequest)
 	offset, err1 := strconv.Atoi(req.QueryParameter("offset"))
 	if err1 != nil {
-		rsp.WriteError(
-			http.StatusBadRequest, 
-			errors.BadRequest(serviceName, "query parameter limit error: %s", err1.Error()),
-		)
-		return
+		offset = 0
 	}
 	limit, err2 := strconv.Atoi(req.QueryParameter("limit"))
 	if err2 != nil {
-		rsp.WriteError(
-			http.StatusBadRequest, 
-			errors.BadRequest(serviceName, "query parameter limit error %s", err2.Error()),
-		)
-		return
+		limit = 20
 	}
 	in.Offset = int32(offset)
 	in.Limit = int32(limit)
@@ -278,7 +266,7 @@ func (api *API) readOption(req *restful.Request, rsp *restful.Response) {
 		customerror.WriteError(err, rsp)
 		return
 	}
-	if err := rsp.WriteEntity(out); err != nil {
+	if err := rsp.WriteEntity(out.Record); err != nil {
 		rsp.WriteError(http.StatusInternalServerError, err)
 	}
 }
@@ -293,12 +281,13 @@ func (api *API) updateOption(req *restful.Request, rsp *restful.Response) {
 		rsp.WriteError(http.StatusBadRequest, err)
 		return
 	}
-	record.Code = req.PathParameter("code")
-	if len(record.Code) == 0 {
+	in.Code  = req.PathParameter("code")
+	if len(in.Code) == 0 {
 		err := errors.BadRequest(serviceName, "code is empty")
 		customerror.WriteError(err, rsp)
 		return
 	}
+	record.Code = in.Code
 	in.Record = record
 
 	out, err := optionCl.UpdateOption(ctx, in)
@@ -306,7 +295,7 @@ func (api *API) updateOption(req *restful.Request, rsp *restful.Response) {
 		customerror.WriteError(err, rsp)
 		return
 	}
-	if err := rsp.WriteEntity(out); err != nil {
+	if err := rsp.WriteEntity(out.Record); err != nil {
 		rsp.WriteError(http.StatusInternalServerError, err)
 	}
 }

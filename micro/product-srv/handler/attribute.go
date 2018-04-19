@@ -90,7 +90,6 @@ func (a *AttributeHandler) DeleteAttribute(ctx context.Context, req *proto.Delet
 		return err1
 	}
 
-	db.DeleteAttribute(shopID, req.Code)
 	if err := db.DeleteAttribute(shopID, req.Code); err != nil {
 		return errors.NotFound(svrName + ".DeleteAttribute", err.Error())
 	}
