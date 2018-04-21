@@ -107,6 +107,7 @@ type Product interface {
 	ReadProduct(dbname string, spu string) (*proto.ProductRecord, error)
 	UpdateProduct(dbname string, spu string, name string, description string) error
 	DeleteProduct(dbname string, spu string) error
+	TaxonProducts(dbname string, taxonCode string, offset int, limit int) (*[]*proto.ProductRecord, error)
 	UpdateProductTaxons(dbname string, spu string, main string, others []string) error 
 	CreateProductAttribute(dbname string, spu string, record *proto.ProductAttribute) error
 	ReadProductAttributes(dbname string, spu string) (*[]*proto.ProductRecord_AttributesRecord, error)
@@ -160,6 +161,11 @@ func UpdateProduct(dbname string, spu string, name string, description string) e
 // DeleteProduct Remove
 func DeleteProduct(dbname string, spu string) error {
 	return db.DeleteProduct(dbname, spu)
+}
+
+// TaxonProducts taxon products
+func TaxonProducts(dbname string, taxonCode string, offset int, limit int) (*[]*proto.ProductRecord, error) {
+	return db.TaxonProducts(dbname, taxonCode, offset, limit)
 }
 
 // UpdateProductTaxons Update

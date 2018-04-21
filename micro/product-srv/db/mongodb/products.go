@@ -52,7 +52,7 @@ type Product_Option struct {
 }
 
 type Variant struct {
-	ID               bson.ObjectId   `bson:"id,omitempty"`
+	ID               bson.ObjectId   `bson:"_id,omitempty"`
 	Sku              string          `bson:"sku,omitempty"`
 	Spu              string          `bson:"spu,omitempty"`
 	Name             string          `bson:"name,omitempty"`
@@ -384,6 +384,26 @@ func (m *Mongo) DeleteProduct(dbname string, spu string) error {
 	c := m.session.DB(dbname).C(productsCollectionName)
 	selector := bson.M{"spu": spu}
 	return c.Remove(selector)
+}
+
+// TaxonProducts taxon products
+func (m *Mongo) TaxonProducts(dbname string, taxonCode string, offset int, limit int) (*[]*proto.ProductRecord, error) {
+	c := m.session.DB(dbname).C(productsCollectionName)
+
+	selector := bson.M{"$or": []bson.M{
+		bson.M{"mainTaxon": taxonCode},
+		bson.M{"productTaxons":taxonCode}}}
+	results := []Product{}
+	if err := c.Find(selector).Skip(offset).Limit(limit).All(&results); err != nil {
+		return nil, err
+	}
+
+	records := []*proto.ProductRecord{}
+	for _, it := range results {
+		records = append(records, m.readProduct(&it, dbname))
+	}
+
+	return &records, nil
 }
 
 // UpdateProductTaxons Update
@@ -766,6 +786,17 @@ func (m *Mongo) RejectProductReview(dbname string, spu string, id string) error 
 // CreateProductVariant Insert
 func (m *Mongo) CreateProductVariant(dbname string, spu string, record *proto.VariantRecord) error {
 	vc := m.session.DB(dbname).C(variantsCollectionName)
+
+	index := mgo.Index{
+		Key:        []string{"sku"},
+		Unique:     true,
+		DropDups:   true,
+		Background: true,
+	}
+
+	if err := vc.EnsureIndex(index); err != nil {
+		return err
+	}
 
 	pricing := Variant_Pricing{
 		Current: record.Pricings.Current,

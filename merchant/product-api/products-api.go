@@ -66,8 +66,8 @@ func apis(ctx *cli.Context) {
 	ws.Route(ws.DELETE("/{spu}/associations/{code}").To(api.deleteProductAssociation))
 
 	ws.Route(ws.POST("/{spu}/images").To(api.createProductImage))
-	ws.Route(ws.PUT("/{spu}/images/{code}").To(api.updateProductImage))
-	ws.Route(ws.DELETE("/{spu}/images/{code}").To(api.deleteProductImage))
+	ws.Route(ws.PUT("/{spu}/images/{type}").To(api.updateProductImage))
+	ws.Route(ws.DELETE("/{spu}/images/{type}").To(api.deleteProductImage))
 
 	ws.Route(ws.POST("/{spu}/reviews").To(api.createProductReview))
 	ws.Route(ws.GET("/{spu}/reviews").To(api.fetchProductReviews))
@@ -97,7 +97,9 @@ func (api *API) createProduct(req *restful.Request, rsp *restful.Response) {
 	in := new(proto.CreateProductRequest)
 	record := new(proto.ProductRecord)
 	if err := req.ReadEntity(&record); err != nil {
-		rsp.WriteError(http.StatusBadRequest, err)
+		rsp.WriteError(
+			http.StatusBadRequest, 
+			errors.BadRequest(srvName + ".createProduct", err.Error()))
 		return
 	}
 	in.Record = record
@@ -108,7 +110,7 @@ func (api *API) createProduct(req *restful.Request, rsp *restful.Response) {
 		return
 	}
 
-	if err := rsp.WriteEntity(out); err != nil {
+	if err := rsp.WriteEntity(out.Record); err != nil {
 		rsp.WriteError(http.StatusInternalServerError, err)
 	}
 }
@@ -153,7 +155,7 @@ func (api *API) fetchProduct(req *restful.Request, rsp *restful.Response) {
 		return
 	}
 
-	if err := rsp.WriteEntity(out); err != nil {
+	if err := rsp.WriteEntity(out.Record); err != nil {
 		rsp.WriteError(http.StatusInternalServerError, err)
 	}
 }
@@ -177,7 +179,7 @@ func (api *API) modifyProduct(req *restful.Request, rsp *restful.Response) {
 		return
 	}
 
-	if err := rsp.WriteEntity(out); err != nil {
+	if err := rsp.WriteEntity(out.Record); err != nil {
 		rsp.WriteError(http.StatusInternalServerError, err)
 	}
 }
@@ -201,7 +203,7 @@ func (api *API) modifyTaxons(req *restful.Request, rsp *restful.Response) {
 		return
 	}
 
-	if err := rsp.WriteEntity(out); err != nil {
+	if err := rsp.WriteEntity(out.Taxons); err != nil {
 		rsp.WriteError(http.StatusInternalServerError, err)
 	}
 }
@@ -225,7 +227,7 @@ func (api *API) createProductAttribute(req *restful.Request, rsp *restful.Respon
 		return
 	}
 
-	if err := rsp.WriteEntity(out); err != nil {
+	if err := rsp.WriteEntity(out.Attribute); err != nil {
 		rsp.WriteError(http.StatusInternalServerError, err)
 	}
 }
@@ -248,7 +250,7 @@ func (api *API) updateProductAttribute(req *restful.Request, rsp *restful.Respon
 		return
 	}
 
-	if err := rsp.WriteEntity(out); err != nil {
+	if err := rsp.WriteEntity(out.Attribute); err != nil {
 		rsp.WriteError(http.StatusInternalServerError, err)
 	}
 }
@@ -291,7 +293,7 @@ func (api *API) createProductAssociation(req *restful.Request, rsp *restful.Resp
 		return
 	}
 
-	if err := rsp.WriteEntity(out); err != nil {
+	if err := rsp.WriteEntity(out.Association); err != nil {
 		rsp.WriteError(http.StatusInternalServerError, err)
 	}
 }
@@ -309,6 +311,7 @@ func (api *API) updateProductAssociation(req *restful.Request, rsp *restful.Resp
 		return
 	}
 	in.Association = association
+	in.Association.Code = in.Code
 
 	out, err := productCl.UpdateProductAssociation(ctx, in)
 	if err != nil {
@@ -316,7 +319,7 @@ func (api *API) updateProductAssociation(req *restful.Request, rsp *restful.Resp
 		return
 	}
 
-	if err := rsp.WriteEntity(out); err != nil {
+	if err := rsp.WriteEntity(out.Association); err != nil {
 		rsp.WriteError(http.StatusInternalServerError, err)
 	}
 }
@@ -359,7 +362,7 @@ func (api *API) createProductImage(req *restful.Request, rsp *restful.Response) 
 		return
 	}
 
-	if err := rsp.WriteEntity(out); err != nil {
+	if err := rsp.WriteEntity(out.Image); err != nil {
 		rsp.WriteError(http.StatusInternalServerError, err)
 	}
 }
@@ -376,6 +379,7 @@ func (api *API) updateProductImage(req *restful.Request, rsp *restful.Response) 
 		return
 	}
 	in.Image = image
+	in.Image.Type = req.PathParameter("type")
 
 	out, err := productCl.UpdateProductImage(ctx, in)
 	if err != nil {
@@ -383,7 +387,7 @@ func (api *API) updateProductImage(req *restful.Request, rsp *restful.Response) 
 		return
 	}
 
-	if err := rsp.WriteEntity(out); err != nil {
+	if err := rsp.WriteEntity(out.Image); err != nil {
 		rsp.WriteError(http.StatusInternalServerError, err)
 	}
 }
@@ -580,7 +584,7 @@ func (api *API) fetchProductVariants(req *restful.Request, rsp *restful.Response
 		return
 	}
 
-	if err := rsp.WriteEntity(out); err != nil {
+	if err := rsp.WriteEntity(out.Records); err != nil {
 		rsp.WriteError(http.StatusInternalServerError, err)
 	}
 }
@@ -599,7 +603,7 @@ func (api *API) fetchProductVariant(req *restful.Request, rsp *restful.Response)
 		return
 	}
 
-	if err := rsp.WriteEntity(out); err != nil {
+	if err := rsp.WriteEntity(out.Record); err != nil {
 		rsp.WriteError(http.StatusInternalServerError, err)
 	}
 }
@@ -624,7 +628,7 @@ func (api *API) updateProductVariant(req *restful.Request, rsp *restful.Response
 		return
 	}
 
-	if err := rsp.WriteEntity(out); err != nil {
+	if err := rsp.WriteEntity(out.Record); err != nil {
 		rsp.WriteError(http.StatusInternalServerError, err)
 	}
 }

@@ -144,6 +144,7 @@ service Product {
 	rpc ReadProduct(ReadProductRequest) returns (ReadProductResponse) {}
 	rpc UpdateProduct(UpdateProductRequest) returns (UpdateProductResponse) {}
 	rpc DeleteProduct(DeleteProductRequest) returns (DeleteProductResponse) {}
+	rpc TaxonProducts (TaxonProductsRequest) returns (TaxonProductsResponse);
 
 	rpc ModifyProductTaxons (ModifyTaxonsRequest) returns (ModifyTaxonsResponse);
 
@@ -199,6 +200,21 @@ message ReadProductsRequest {
 }
 
 message ReadProductsResponse {
+	int32 offset = 1;
+	int32 limit = 2;
+	int32 total = 3;
+
+	repeated ProductRecord records = 4;
+}
+
+message TaxonProductsRequest {
+	string shop_id = 1;
+	int32 offset = 2;
+	int32 limit = 3;
+	string taxonCode = 4;
+}
+
+message TaxonProductsResponse {
 	int32 offset = 1;
 	int32 limit = 2;
 	int32 total = 3;

@@ -95,6 +95,25 @@ func (h *Handler) DeleteProduct(ctx context.Context, req *proto.DeleteProductReq
 	return nil
 }
 
+// TaxonProducts is a single request handler called via client.TaxonProducts or the generated client code
+func (h *Handler) TaxonProducts(ctx context.Context, req *proto.TaxonProductsRequest, rsp *proto.TaxonProductsResponse) error {
+	shopID, err1 := shopkey.GetShopIDFrom(ctx, req.ShopId)
+	if err1 != nil {
+		return err1
+	}
+
+	products, err := db.TaxonProducts(shopID, req.TaxonCode, int(req.Offset), int(req.Limit))
+	if err != nil {
+		return errors.NotFound(svrName + ".ReadProducts", err.Error())
+	}
+
+	rsp.Limit = req.Limit
+	rsp.Offset = req.Offset
+	rsp.Total = int32(len(*products))
+	rsp.Records = *products
+	return nil
+}
+
 // ModifyProductTaxons is a single request handler called via client.ModifyProductTaxons or the generated client code
 func (h *Handler) ModifyProductTaxons(ctx context.Context, req *proto.ModifyTaxonsRequest, rsp *proto.ModifyTaxonsResponse) error {
 	shopID, err1 := shopkey.GetShopIDFrom(ctx, req.ShopId)

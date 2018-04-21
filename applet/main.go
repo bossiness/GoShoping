@@ -1,6 +1,7 @@
 package main
 
 import (
+	"btdxcx.com/applet/product-api"
 	"os"
 
 	ccli "github.com/micro/cli"
@@ -8,7 +9,7 @@ import (
 )
 
 func init() {
-	os.Setenv("MERCHANT_API", "api")
+	os.Setenv("APPLET_API", "api")
 }
 
 func setup(app *ccli.App) {
@@ -29,7 +30,7 @@ func setup(app *ccli.App) {
 
 func main() {
 	app := cmd.App()
-	// app.Commands = append(app.Commands...)
+	app.Commands = append(app.Commands, productapi.Commands()...)
 	app.Action = func(context *ccli.Context) {
 		ccli.ShowAppHelp(context)
 	}
@@ -37,8 +38,8 @@ func main() {
 	setup(app)
 
 	cmd.Init(
-		cmd.Name("merchant"),
-		cmd.Description("merchant apis"),
+		cmd.Name("applet"),
+		cmd.Description("applet apis"),
 		cmd.Version("v1"),
 	)
 }

@@ -1,7 +1,6 @@
 package productapi
 
 import (
-	"github.com/micro/go-micro/errors"
 	"strconv"
 	"btdxcx.com/os/custom-error"
 	"net/http"
@@ -35,6 +34,11 @@ func Commands() []cli.Command {
 			Name:   "product",
 			Usage:  "Run product api",
 			Action: api,
+		},
+		{
+			Name:   "taxon-products",
+			Usage:  "Run product api",
+			Action: taxon,
 		},
 	}
 }
@@ -81,19 +85,11 @@ func (api *API) fetchProducts(req *restful.Request, rsp *restful.Response) {
 	in := new(proto.ReadProductsRequest)
 	offset, err1 := strconv.Atoi(req.QueryParameter("offset"))
 	if err1 != nil {
-		rsp.WriteError(
-			http.StatusBadRequest, 
-			errors.BadRequest(serviceName, "query parameter limit error: %s", err1.Error()),
-		)
-		return
+		offset = 0
 	}
 	limit, err2 := strconv.Atoi(req.QueryParameter("limit"))
 	if err2 != nil {
-		rsp.WriteError(
-			http.StatusBadRequest, 
-			errors.BadRequest(serviceName, "query parameter limit error %s", err2.Error()),
-		)
-		return
+		limit = 20
 	}
 	in.Offset = int32(offset)
 	in.Limit = int32(limit)
@@ -121,7 +117,7 @@ func (api *API) fetchProduct(req *restful.Request, rsp *restful.Response) {
 		return
 	}
 
-	if err := rsp.WriteEntity(out); err != nil {
+	if err := rsp.WriteEntity(out.Record); err != nil {
 		rsp.WriteError(http.StatusInternalServerError, err)
 	}
 }
