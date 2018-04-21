@@ -51,19 +51,19 @@ micro --register_ttl=30 --register_interval=15 api --handler=proxy --address=0.0
 account-srv
 
 ```bash
-account-srv --database_url=${database_url} 1>>${logpath}/srv/account-info.log 2>>${logpath}/srv/account-error.log 
+account-srv --database_url=${database_url} 1>>${logpath}/srv/account-info.log 2>>${logpath}/srv/account-error.log &
 ```
 
 jwtauth-srv
 
 ```bash
-jwtauth-srv --database_url=${database_url} 1>>${logpath}/srv/jwtaut-info.log 2>>${logpath}/srv/jwtaut-error.log
+jwtauth-srv --database_url=${database_url} 1>>${logpath}/srv/jwtaut-info.log 2>>${logpath}/srv/jwtaut-error.log &
 ```
 
 shop-srv
 
 ```bash
-shop-srv --database_url=${database_url} 1>>${logpath}/srv/shop-info.log 2>>${logpath}/srv/shop-error.log
+shop-srv --database_url=${database_url} 1>>${logpath}/srv/shop-info.log 2>>${logpath}/srv/shop-error.log &
 ```
 
 ### APIs
@@ -73,25 +73,25 @@ shop-srv --database_url=${database_url} 1>>${logpath}/srv/shop-info.log 2>>${log
 - center
 
 ```bash
-center-api --register_ttl=30 --register_interval=15 auth --api_service=com.btdxcx.center.api.auth --site_type=center 1>>${logpath}/api/center/auth-info.log 2>>${logpath}/api/center/auth-error.log
+center-api --register_ttl=30 --register_interval=15 auth --api_service=com.btdxcx.center.api.auth --site_type=center 1>>${logpath}/api/center/auth-info.log 2>>${logpath}/api/center/auth-error.log &
 ```
 
 - merchant
 
 ```bash
-center-api --register_ttl=30 --register_interval=15 auth --api_service=com.btdxcx.merchant.api.auth --site_type=back 1>>${logpath}/api/merchant/auth-info.log 2>>${logpath}/api/merchant/auth-error.log
+center-api --register_ttl=30 --register_interval=15 auth --api_service=com.btdxcx.merchant.api.auth --site_type=back 1>>${logpath}/api/merchant/auth-info.log 2>>${logpath}/api/merchant/auth-error.log &
 ```
 
 - applet
 
 ```bash
-center-api --register_ttl=30 --register_interval=15 auth --api_service=com.btdxcx.applet.api.auth --site_type=mini 1>>${logpath}/api/applet/auth-info.log 2>>${logpath}/api/applet/auth-error.log
+center-api --register_ttl=30 --register_interval=15 auth --api_service=com.btdxcx.applet.api.auth --site_type=mini 1>>${logpath}/api/applet/auth-info.log 2>>${logpath}/api/applet/auth-error.log &
 ```
 
 #### shops apis
 
 ```bash
-center-api --register_ttl=30 --register_interval=15 shop 1>>${logpath}/api/center/shop-info.log 2>>${logpath}/api/center/shop-error.log
+center-api --register_ttl=30 --register_interval=15 shop 1>>${logpath}/api/center/shop-info.log 2>>${logpath}/api/center/shop-error.log &
 ```
 
 #### taxons apis
@@ -99,6 +99,27 @@ center-api --register_ttl=30 --register_interval=15 shop 1>>${logpath}/api/cente
 - merchant
 
 ```bash
-merchant --register_ttl=30 --register_interval=15 taxons 1>>${logpath}/api/merchant/taxons-info.log 2>>${logpath}/api/merchant/taxons-error.log
+merchant --register_ttl=30 --register_interval=15 taxons 1>>${logpath}/api/merchant/taxons-info.log 2>>${logpath}/api/merchant/taxons-error.log &
 ```
 
+### product
+
+- merchant
+
+```bash
+merchant --register_ttl=30 --register_interval=15 products 1>>${logpath}/api/merchant/products-info.log 2>>${logpath}/api/merchant/products-error.log &
+```
+
+```bash
+merchant --register_ttl=30 --register_interval=15 product 1>>${logpath}/api/merchant/product-info.log 2>>${logpath}/api/merchant/product-error.log &
+```
+
+- applet
+
+```bash
+applet --register_ttl=30 --register_interval=15 product 1>>${logpath}/api/applet/product-info.log 2>>${logpath}/api/applet/product-error.log &
+```
+
+```bash
+applet --register_ttl=30 --register_interval=15 taxon-products 1>>${logpath}/api/applet/taxon-products-info.log 2>>${logpath}/api/applet/taxon-products-error.log &
+```
