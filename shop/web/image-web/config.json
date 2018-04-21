@@ -1,4 +1,4 @@
 {
-	"ListenAddr":"0.0.0.0:10086",
-	"Storage":"/Users/jigang.duan/WorkSpace/study/image"
+	"ListenAddr":"0.0.0.0:3012",
+	"Storage":"/home/jigangduan/workspace/image/storage"
 }
