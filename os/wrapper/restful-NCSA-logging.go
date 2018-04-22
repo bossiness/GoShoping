@@ -1,6 +1,7 @@
 package logwrapper
 
 import (
+	"fmt"
 	"github.com/emicklei/go-restful"
 	"github.com/micro/go-log"
 	"strings"
@@ -23,7 +24,7 @@ func NCSACommonLogFormatLogger() restful.FilterFunction {
 			}
 		}
 		chain.ProcessFilter(req, resp)
-		log.Log("%s - %s [%s] \"%s %s %s\" %d %d",
+		logstr := fmt.Sprintf("%s - %s [%s] \"%s %s %s\" %d %d",
 			strings.Split(req.Request.RemoteAddr, ":")[0],
 			username,
 			time.Now().Format("02/Jan/2006:15:04:05 -0700"),
@@ -33,5 +34,6 @@ func NCSACommonLogFormatLogger() restful.FilterFunction {
 			resp.StatusCode(),
 			resp.ContentLength(),
 		)
+		log.Log(logstr)
 	}
 }

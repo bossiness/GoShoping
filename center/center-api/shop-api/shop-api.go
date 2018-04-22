@@ -191,14 +191,26 @@ func (api *API) delete(req *restful.Request, rsp *restful.Response) {
 
 func (api *API) submin(req *restful.Request, rsp *restful.Response) {
 	updateState(req, rsp, dproto.State_reviewing)
+	rsp.WriteHeader(http.StatusNoContent)
 }
 
 func (api *API) audit(req *restful.Request, rsp *restful.Response) {
 	updateState(req, rsp, dproto.State_completed)
+
+	in := &kproto.KeyRequest{
+		Uuid: req.PathParameter("shopID"),
+	}
+	out, err := keyCl.Create(req.Request.Context(), in)
+	if err != nil {
+		customerror.WriteError(err, rsp)
+		return
+	}
+	rsp.WriteEntity(out)
 }
 
 func (api *API) cancel(req *restful.Request, rsp *restful.Response) {
 	updateState(req, rsp, dproto.State_untreated)
+	rsp.WriteHeader(http.StatusNoContent)
 }
 
 func updateState(req *restful.Request, rsp *restful.Response, state dproto.State) {
@@ -214,6 +226,4 @@ func updateState(req *restful.Request, rsp *restful.Response, state dproto.State
 		customerror.WriteError(err, rsp)
 		return
 	}
-
-	rsp.WriteHeader(http.StatusNoContent)
 }

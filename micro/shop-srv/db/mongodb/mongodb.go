@@ -364,61 +364,72 @@ func (m *Mongo) UpdateDetails(req *dproto.UpdateRequest) error {
 
 	shop := &ShopDetails{}
 	c.Find(selector).One(shop)
-	if req.Details.Owner != nil {
-		owner := req.Details.Owner
-		if shop.Owner.Id != nil {
-			if c := m.session.DB(shop.Owner.Database).C(shop.Owner.Collection); c != nil {
-				updataData := bson.M{"$set": bson.M{
-					"nickname": owner.Nickname,
-					"phone":    owner.Phone,
-				}}
-				c.UpdateId(shop.Owner.Id, updataData)
+	if req.Details != nil {
+		if req.Details.Owner != nil {
+			owner := req.Details.Owner
+			if shop.Owner.Id != nil {
+				if c := m.session.DB(shop.Owner.Database).C(shop.Owner.Collection); c != nil {
+					updataData := bson.M{"$set": bson.M{
+						"nickname": owner.Nickname,
+						"phone":    owner.Phone,
+					}}
+					c.UpdateId(shop.Owner.Id, updataData)
+				}
 			}
 		}
-	}
-	if req.Details.Mimi != nil {
-		mimi := req.Details.Mimi
-		if shop.Mini.Id != nil {
-			if c := m.session.DB(shop.Mini.Database).C(shop.Mini.Collection); c != nil {
-				updataData := bson.M{"$set": bson.M{
-					"wechat_id": mimi.WechatId,
-				}}
-				c.UpdateId(shop.Mini.Id, updataData)
+		if req.Details.Mimi != nil {
+			mimi := req.Details.Mimi
+			if shop.Mini.Id != nil {
+				if c := m.session.DB(shop.Mini.Database).C(shop.Mini.Collection); c != nil {
+					updataData := bson.M{"$set": bson.M{
+						"wechat_id": mimi.WechatId,
+					}}
+					c.UpdateId(shop.Mini.Id, updataData)
+				}
 			}
 		}
-	}
-	if req.Details.Physical != nil {
-		physical := req.Details.Physical
-		if shop.Physical.Id != nil {
-			if physical.Location == nil {
-				physical.Location = &dproto.ShopDetails_PhysicalStore_Location{}
-			}
-			if c := m.session.DB(shop.Physical.Database).C(shop.Physical.Collection); c != nil {
-				updataData := bson.M{"$set": bson.M{
-					"name":               physical.Name,
-					"contact":            physical.Contact,
-					"email":              physical.Email,
-					"zipCode":            physical.ZipCode,
-					"address":            physical.Address,
-					"location.latitude":  physical.Location.Latitude,
-					"location.longitude": physical.Location.Longitude,
-				}}
-				c.UpdateId(shop.Physical.Id, updataData)
+		if req.Details.Physical != nil {
+			physical := req.Details.Physical
+			if shop.Physical.Id != nil {
+				if physical.Location == nil {
+					physical.Location = &dproto.ShopDetails_PhysicalStore_Location{}
+				}
+				if c := m.session.DB(shop.Physical.Database).C(shop.Physical.Collection); c != nil {
+					updataData := bson.M{"$set": bson.M{
+						"name":               physical.Name,
+						"contact":            physical.Contact,
+						"email":              physical.Email,
+						"zipCode":            physical.ZipCode,
+						"address":            physical.Address,
+						"location.latitude":  physical.Location.Latitude,
+						"location.longitude": physical.Location.Longitude,
+					}}
+					c.UpdateId(shop.Physical.Id, updataData)
+				}
 			}
 		}
+
+		updataData := bson.M{"$set": bson.M{
+			"update_at": time.Now().Unix(),
+			"submit_at": submitAt,
+			"period_at": perioAt,
+			"state":     req.State,
+			"name":      req.Details.Name,
+			"logo":      req.Details.Logo,
+			"introduce": req.Details.Introduce,
+		}}
+		return c.Update(selector, updataData)
+
 	}
-	
 
 	updataData := bson.M{"$set": bson.M{
 		"update_at": time.Now().Unix(),
 		"submit_at": submitAt,
 		"period_at": perioAt,
 		"state":     req.State,
-		"name":      req.Details.Name,
-		"logo":      req.Details.Logo,
-		"introduce": req.Details.Introduce,
 	}}
 	return c.Update(selector, updataData)
+	
 }
 
 // ListDetails list
