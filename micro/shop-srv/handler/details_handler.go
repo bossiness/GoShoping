@@ -94,6 +94,8 @@ func (h *DetailsHandler) List(ctx context.Context, req *proto.ListRequest, rsp *
 
 // Update Shop Details
 func (h *DetailsHandler) Update(ctx context.Context, req *proto.UpdateRequest, rsp *proto.UpdateResponse) error {
-
-	return db.UpdateDetails(req)
+	if err := db.UpdateDetails(req); err != nil {
+		return errors.NotFound("com.btdxcx.micro.srv.shop.details.Update", err.Error())
+	}
+	return nil
 }

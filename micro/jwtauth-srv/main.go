@@ -1,6 +1,8 @@
 package main
 
 import (
+	"github.com/micro/go-micro/server"
+	"btdxcx.com/os/wrapper"
 	"btdxcx.com/micro/jwtauth-srv/db"
 	"btdxcx.com/micro/jwtauth-srv/db/mongodb"
 	"github.com/micro/cli"
@@ -16,6 +18,9 @@ import (
 func main() {
 	// New Service
 	service := micro.NewService(
+		micro.Server(
+			server.NewServer(server.WrapHandler(logwrapper.LogWrapper)),
+		),
 		micro.Name("com.btdxcx.micro.srv.jwtauth"),
 		micro.Version("v1"),
 		micro.RegisterTTL(time.Second*30),

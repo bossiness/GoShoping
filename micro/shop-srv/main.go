@@ -1,6 +1,8 @@
 package main
 
 import (
+	"github.com/micro/go-micro/server"
+	"btdxcx.com/os/wrapper"
 	"time"
 
 	"btdxcx.com/micro/shop-srv/db"
@@ -18,6 +20,9 @@ func main() {
 
 	// New Service
 	service := micro.NewService(
+		micro.Server(
+			server.NewServer(server.WrapHandler(logwrapper.LogWrapper)),
+		),
 		micro.Name("com.btdxcx.micro.srv.shop"),
 		micro.Version("v1"),
 		micro.RegisterTTL(time.Second*30),

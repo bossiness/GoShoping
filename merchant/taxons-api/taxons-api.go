@@ -1,6 +1,7 @@
 package taxonsapi
 
 import (
+	"btdxcx.com/os/wrapper"
 	"net/http"
 
 	"btdxcx.com/micro/shop-srv/wrapper/inspection/shop-key"
@@ -160,6 +161,8 @@ func api(ctx *cli.Context) {
 	api := new(API)
 	ws := new(restful.WebService)
 	wc := restful.NewContainer()
+
+	ws.Filter(logwrapper.NCSACommonLogFormatLogger())
 	ws.Consumes(restful.MIME_XML, restful.MIME_JSON)
 	ws.Produces(restful.MIME_JSON, restful.MIME_XML)
 	ws.Path("/taxons")
