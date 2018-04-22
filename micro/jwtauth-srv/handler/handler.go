@@ -58,7 +58,7 @@ func (h *Handler) Token(ctx context.Context, req *proto.TokenRequest, rsp *proto
 		return err
 	}
 
-	exp := time.Now().Add(time.Hour).Unix()
+	exp := time.Now().Add(time.Hour * 24 * 2).Unix()
 
 	accessToken, err := accessToken(
 		jwtID.String(),
@@ -94,7 +94,7 @@ func (h *Handler) Token(ctx context.Context, req *proto.TokenRequest, rsp *proto
 
 func refreshToken(jti string, clientID string, secrent string, shopID string) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"exp":       time.Now().Add(time.Hour * 24).Unix(),
+		"exp":       time.Now().Add(time.Hour * 24 * 30).Unix(),
 		"client_id": clientID,
 		"jti":       jti,
 		"shop_id":   shopID,
