@@ -1,10 +1,10 @@
 package main
 
 import (
-	"btdxcx.com/center/api/shop-api"
+	"btdxcx.com/center/center-api/shop-api"
 	"os"
 
-	"btdxcx.com/center/api/auth-api"
+	"btdxcx.com/center/center-api/auth-api"
 
 	ccli "github.com/micro/cli"
 	"github.com/micro/go-micro/cmd"
