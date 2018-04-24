@@ -18,8 +18,8 @@ type Option struct {
 	ID        bson.ObjectId `bson:"_id,omitempty"`
 	Code      string        `bson:"code,omitempty"`
 	Options   []OptionValue `bson:"options,omitempty"`
-	UpdatedAt int64         `json:"updated_at,omitempty"`
-	CreatedAt int64         `json:"created_at,omitempty"`
+	UpdatedAt int64         `bson:"updated_at,omitempty"`
+	CreatedAt int64         `bson:"created_at,omitempty"`
 }
 
 // OptionValue inc
