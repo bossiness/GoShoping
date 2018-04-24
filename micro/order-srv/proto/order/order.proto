@@ -1,0 +1,291 @@
+syntax = "proto3";
+
+package com.btdxcx.micro.srv.order;
+
+service Order {
+	rpc CreateCart(CreateCartRequest) returns (OrderResponse) {}
+	rpc ReadOrders (ReadOrdersRequest) returns (ReadOrdersResponse);
+	rpc ReadOrder (ReadOrderRequest) returns (OrderResponse);
+	rpc DeleteOrder (DeleteOrderRequest) returns (Response);
+
+	rpc CreateCartItem (CreateCartItemRequest) returns (CartItemResponse);
+	rpc UpdateCartItem (UpdateCartItemRequest) returns (CartItemResponse);
+	rpc DeleteCartItem (DeleteCartItemRequest) returns (Response);
+
+	rpc CheckoutAddressing (CheckoutAddressingRequest) returns (Response);
+	rpc CheckoutSelectShipping (CheckoutSelectShippingRequest) returns (Response);
+	rpc CheckoutSelectPayment (CheckoutSelectPaymentRequest) returns (Response);
+	rpc CheckoutComplete (CheckoutCompleteRequest) returns (Response);
+
+	rpc CancelOrder (CancelOrderRequest) returns (Response);
+	rpc ShipmentShip (ShipmentShipRequest) returns (Response);
+	rpc ShipmentComplete (ShipmentCompleteRequest) returns (Response);
+
+}
+
+message CreateCartRequest {
+	string shop_id = 1;
+	string customer = 2;
+}
+
+message OrderResponse {
+	OrderRecord record = 1;
+}
+
+message ReadOrdersRequest {
+	string shop_id = 1;
+	int32 offset = 2;
+	int32 limit = 3;
+	string checkoutState = 4;
+}
+
+message ReadOrdersResponse {
+	int32 offset = 1;
+	int32 limit = 2;
+	int32 total = 3;
+
+	repeated OrderRecord records = 4;
+}
+
+message ReadOrderRequest {
+	string shop_id = 1;
+	string uuid = 2;
+}
+
+message DeleteOrderRequest {
+	string shop_id = 1;
+	string uuid = 2;
+}
+
+message Response {
+}
+
+message CreateCartItemRequest {
+	string shop_id = 1;
+	string cart_id = 2;
+	string variant = 3;
+	int64 quantity = 4;
+}
+
+message CartItemResponse {
+	OrderRecord.Item item = 1;
+}
+
+message UpdateCartItemRequest {
+	string shop_id = 1;
+	string cart_id = 2;
+	string cart_item_id = 3;
+	int64 quantity = 4;
+}
+
+message DeleteCartItemRequest {
+	string shop_id = 1;
+	string cart_id = 2;
+	string cart_item_id = 3;
+}
+
+message CheckoutAddressingRequest {
+	string shop_id = 1;
+	string cart_id = 2;
+	bool differentBillingAddress = 3;
+	Address shippingAddress = 4;
+	Address billingAddress = 5; 
+}
+
+message CheckoutSelectShippingRequest {
+	string shop_id = 1;
+	string cart_id = 2;
+	string method = 3;
+}
+
+message CheckoutSelectPaymentRequest {
+	string shop_id = 1;
+	string cart_id = 2;
+	string method = 3;
+}
+
+message CheckoutCompleteRequest {
+	string shop_id = 1;
+	string cart_id = 2;
+	string notes = 3;
+}
+
+message CancelOrderRequest {
+	string shop_id = 1;
+	string cart_id = 2;
+}
+
+message ShipmentShipRequest {
+	string shop_id = 1;
+	string order_id = 2;
+}
+
+message ShipmentCompleteRequest {
+	string shop_id = 1;
+	string order_id = 2;
+}
+
+
+message OrderRecord {
+	string uuid = 1;
+	repeated Item items = 2;
+	int64 itemsTotal = 3;
+	repeated Adjustment adjustments = 4;
+	int64 adjustmentsTotal = 5;
+	int64 total = 6;
+	Address shippingAddress = 7;
+	Address billingAddress = 8;
+	Shipment shipment = 9;
+	Payment payment = 10;
+	Customer customer = 11;
+	string state = 12;
+	string checkoutState = 13;
+	int64 checkoutCompleteAt = 14;
+	int64 created_at = 15;
+	int64 updated_at = 16;
+
+	message Payment {
+		string state = 1;
+		int64 amount = 2;
+		PaymentMethod method = 3;
+	}
+
+	message Shipment {
+		string state = 1;
+		ShipmentMethod method = 2;
+	}
+
+	message Item {
+		string uuid = 1;
+		int64 quantity = 2;
+		int64 unitPrice = 3;
+		int64 total = 4;
+		repeated Adjustment adjustments = 5;
+		int64 adjustmentsTotal = 6;
+		string variant = 7;
+		int64 created_at = 8;
+		int64 updated_at = 9;
+	}
+
+	message Adjustment {
+		string uuid = 1;
+		string type = 2;
+		string label = 3;
+		int64 amount = 4;
+	}
+}
+
+
+message Address {
+	string id = 1;
+	string firstName = 2;
+	string lastName = 3;
+	string city = 4;
+	string postcode = 5;
+	string street = 6;
+	string country = 7;
+}
+
+message Customer {
+	string username = 1;
+	string firstName = 2;
+	string lastName = 3;
+	string phone = 4;
+	string email = 5;
+	string portrait = 6;
+	string role = 7;
+}
+
+message ShipmentMethod {
+	string code = 1;
+	string name = 2;
+	string description = 3;
+	int64 price = 4;
+}
+
+message PaymentMethod {
+	string code = 1;
+	string name = 2;
+	string description = 3;
+}
+
+
+service ShipmentService {
+	rpc CreateShipmentMethod (CreateShipmentMethodRequest) returns (CreateShipmentMethodResponse);
+	rpc ReadShipmentMethods (ReadMethodsRequest) returns (ReadShipmentMethodsResponse);
+	rpc UpdateShipmentMethod (UpdateShipmentMethodRequest) returns (UpdateShipmentMethodResponse);
+	rpc DeleteShipmentMethod (DeleteShipmentMethodRequest) returns (DeleteShipmentMethodResponse);
+}
+
+message ReadShipmentMethodsResponse {
+	repeated ShipmentMethod methods = 1;
+}
+
+message CreateShipmentMethodRequest {
+	string shop_id = 1;
+	ShipmentMethod method = 2;
+}
+
+message CreateShipmentMethodResponse {
+	ShipmentMethod method = 1;
+}
+
+message UpdateShipmentMethodRequest {
+	string shop_id = 1;
+	string code = 2;
+	ShipmentMethod method = 3;
+}
+
+message UpdateShipmentMethodResponse {
+	ShipmentMethod method = 1;
+}
+
+message DeleteShipmentMethodRequest {
+	string shop_id = 1;
+	string code = 2;
+}
+
+message DeleteShipmentMethodResponse {
+}
+
+service PaymentService {
+	rpc CreatePaymentMethod (CreatePaymentMethodRequest) returns (CreatePaymentMethodResponse);
+	rpc ReadPaymentMethods (ReadMethodsRequest) returns (ReadPaymentMethodsResponse);
+	rpc UpdatePaymentMethod (UpdatePaymentMethodRequest) returns (UpdatePaymentMethodResponse);
+	rpc DeletePaymentMethod (DeletePaymentMethodRequest) returns (DeletePaymentMethodResponse);
+}
+
+message ReadMethodsRequest {
+	string shop_id = 1;
+}
+
+message ReadPaymentMethodsResponse {
+	repeated PaymentMethod methods = 1;
+}
+
+message CreatePaymentMethodRequest {
+	string shop_id = 1;
+	PaymentMethod method = 2;
+}
+
+message CreatePaymentMethodResponse {
+	PaymentMethod method = 1;
+}
+
+message UpdatePaymentMethodRequest {
+	string shop_id = 1;
+	string code = 2;
+	PaymentMethod method = 3;
+}
+
+message UpdatePaymentMethodResponse {
+	PaymentMethod method = 1;
+}
+
+message DeletePaymentMethodRequest {
+	string shop_id = 1;
+	string code = 2;
+}
+
+message DeletePaymentMethodResponse {
+}
