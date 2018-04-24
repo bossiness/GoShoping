@@ -1,7 +1,5 @@
 #!/bin/bash
 
-# Just a script to run the demo
-
 cmd=$1
 shift
 
@@ -82,7 +80,7 @@ center_apis() {
 	  center-api --register_ttl=30 --register_interval=15 shop 1>>${logpath}/api/center/info.log 2>>${logpath}/api/center/error.log &
 	  ;;
 	  *)
-	  echo "run.sh start api $0 <auth|shop>"
+	  echo "run.sh start api center <auth|shop>"
 	  exit
 	  ;;
   esac
@@ -93,7 +91,22 @@ merchant_apis() {
 }
 
 applet_apis() {
-  echo 'start applet apis'
+  api=$1
+  shift
+  case $api in
+	  auth)
+    echo 'start center auth api!'
+	  center-api --register_ttl=30 --register_interval=15 auth --api_service=com.btdxcx.applet.api.auth --site_type=mini 1>>${logpath}/api/applet/info.log 2>>${logpath}/api/applet/error.log &
+	  ;;
+	  shop)
+    echo 'start center shop apis!'
+	  applet --register_ttl=30 --register_interval=15 shop 1>>${logpath}/api/center/info.log 2>>${logpath}/api/center/error.log &
+	  ;;
+	  *)
+	  echo "run.sh start api center <auth|shop>"
+	  exit
+	  ;;
+  esac
 }
 
 start() {
