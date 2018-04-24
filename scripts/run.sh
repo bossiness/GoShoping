@@ -25,12 +25,15 @@ start_srv() {
   srv=$1
   case $srv in
 	  account)
+    echo 'start account srv!'
 	  account-srv --database_url=${database_url} 1>>${logpath}/srv/info.log 2>>${logpath}/srv/error.log &
 	  ;;
 	  jwtauth)
+    echo 'start jwtauth srv!'
 	  jwtauth-srv --database_url=${database_url} 1>>${logpath}/srv/info.log 2>>${logpath}/srv/error.log &
 	  ;;
     shop)
+    echo 'start shop srv!'
 	  shop-srv --database_url=${database_url} 1>>${logpath}/srv/info.log 2>>${logpath}/srv/error.log &
 	  ;;
 	  *)
