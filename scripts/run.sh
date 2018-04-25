@@ -39,8 +39,12 @@ start_srv() {
     echo 'start shop srv!'
 	  shop-srv --database_url=${database_url} 1>>${logpath}/srv/info.log 2>>${logpath}/srv/error.log &
 	  ;;
+		taxons)
+    echo 'start jwtauth srv!'
+	  taxons-srv --database_url=${database_url} 1>>${logpath}/srv/info.log 2>>${logpath}/srv/error.log &
+	  ;;
 	  *)
-	  echo "run.sh start $0 <account|jwtauth|shop>"
+	  echo "run.sh start $0 <account|jwtauth|shop|taxons>"
 	  exit
 	  ;;
   esac
@@ -101,12 +105,21 @@ applet_apis() {
 	  shop)
     echo 'start center shop apis!'
 	  applet --register_ttl=30 --register_interval=15 shop 1>>${logpath}/api/center/info.log 2>>${logpath}/api/center/error.log &
+		isSuccess
 	  ;;
 	  *)
 	  echo "run.sh start api center <auth|shop>"
 	  exit
 	  ;;
   esac
+}
+
+isSuccess() {
+	if [ $? -eq 0 ] ; then
+		echo 'start center shop apis success!'
+	else
+		echo 'start center shop apis failure!'
+	fi
 }
 
 start() {
