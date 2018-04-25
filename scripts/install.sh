@@ -4,11 +4,59 @@ cmd=$1
 shift
 
 srv() {
-    echo 'install srv'
+	subcmd=$1
+    shift
+    case $subcmd in
+	account)
+	account_srv
+	;;
+	jwtauth)
+	jwtauth_srv
+	;;
+    order)
+	order_srv
+	;;
+	product)
+	product_srv
+	;;
+	shop)
+	shop_srv
+	;;
+	taxons)
+	taxons_str
+	;;
+	*)
+	echo "$0 srv <account|jwtauth|order|product|shop|taxons>"
+	exit
+	;;
+	esac
+}
+
+account_srv() {
+	go install -x btdxcx.com/micro/account-srv
+}
+
+jwtauth_srv() {
+	go install -x btdxcx.com/micro/jwtauth-srv
+}
+
+order_srv() {
+	go install -x btdxcx.com/micro/order-srv
+}
+
+product_srv() {
+	go install -x btdxcx.com/micro/product-srv
+}
+
+shop_srv() {
+	go install -x btdxcx.com/micro/shop-srv
+}
+
+taxons_str() {
+	go install -x btdxcx.com/micro/taxons-srv
 }
 
 api() {
-    echo 'install api'
     subcmd=$1
     shift
     case $subcmd in
@@ -22,10 +70,10 @@ api() {
 	applet
 	;;
 	*)
-	echo "$0 api <center|merchant|applet> {subcmd}"
+	echo "$0 api <center|merchant|applet>"
 	exit
 	;;
-esac
+	esac
 }
 
 applet() {
