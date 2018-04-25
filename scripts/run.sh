@@ -107,6 +107,7 @@ applet_apis() {
 	  applet --register_ttl=30 --register_interval=15 shop 1>>${logpath}/api/applet/info.log 2>>${logpath}/api/applet/error.log &
 		isSuccess
 	  ;;
+		taxons)
 		echo 'start applet taxons apis!'
 	  applet --register_ttl=30 --register_interval=15 taxons 1>>${logpath}/api/applet/info.log 2>>${logpath}/api/applet/error.log &
 		isSuccess
