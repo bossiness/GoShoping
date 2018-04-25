@@ -1,4 +1,6 @@
-#!/bin/bash
+#!/bin/bash -v
+
+# set -x
 
 cmd=$1
 shift
@@ -6,17 +8,35 @@ shift
 ## set config
 ### logs path
 logpath=/home/jigangduan/workspace/micro/logs
+env_cloud=YES
 if [ ! -d $logpath ] ; then
-  echo "$logpath : No such directory"
-  exit 1
+	logpath=/Users/jigang.duan/WorkSpace/study/go/log
+	if [ ! -d $logpath ] ; then
+  	echo "$logpath : No such directory"
+  	exit 1
+	fi
+	env_cloud=NO
 fi
+echo "logpath: $logpath"
+
 ### mongodb URL
-database_url=mongodb://root:GCCTS123@dds-bp18ebd1d16fc5b41515-pub.mongodb.rds.aliyuncs.com:3717,dds-bp18ebd1d16fc5b42738-pub.mongodb.rds.aliyuncs.com:3717/admin?replicaSet=mgset-5412007
+if [ $env_cloud = YES ] ; then
+	database_url=mongodb://root:GCCTS123@dds-bp18ebd1d16fc5b41515-pub.mongodb.rds.aliyuncs.com:3717,dds-bp18ebd1d16fc5b42738-pub.mongodb.rds.aliyuncs.com:3717/admin?replicaSet=mgset-5412007
+else
+	database_url=localhost:27017
+fi
+echo "database_url: $database_url"
+
 
 ## Start Services
 ### Run Consul
 start_consul() {
-  consul agent -server -bootstrap-expect 1 -data-dir /tmp/consul
+	echo 'Run Consul'
+	if [ $env_cloud = YES ] ; then
+		consul agent -server -bootstrap-expect 1 -data-dir /tmp/consul
+	else
+		consul agent -dev 1>>${logpath}/consul.log 2>>${logpath}/consul.error.log &
+	fi
 }
 stop_consul() {
   pkill consul
@@ -149,6 +169,33 @@ isSuccess() {
 	fi
 }
 
+start_micro() {
+	sub=$1
+  shift
+  case $sub in
+	  web)
+		echo 'run micro web, at post: 3012'
+	  micro --register_ttl=30 --register_interval=15 web --address=0.0.0.0:3012 1>>${logpath}/micro-web.log 2>>${logpath}/micro-web.err.log &
+	  ;;
+	  center_api)
+		echo 'run micro api center, at post: 3001'
+	  micro --register_ttl=30 --register_interval=15 api --handler=proxy --address=0.0.0.0:3001 --namespace=com.btdxcx.center.api   1>>${logpath}/micro-api.log 2>>${logpath}/micro-api.err.log &
+	  ;;
+		merchant_api)
+		echo 'run micro api merchant, at post: 3002'
+	  micro --register_ttl=30 --register_interval=15 api --handler=proxy --address=0.0.0.0:3002 --namespace=com.btdxcx.merchant.api 1>>${logpath}/micro-api.log 2>>${logpath}/micro-api.err.log &
+	  ;;
+		applet_api)
+		echo 'run micro api applet, at post: 3003'
+	  micro --register_ttl=30 --register_interval=15 api --handler=proxy --address=0.0.0.0:3003 --namespace=com.btdxcx.applet.api   1>>${logpath}/micro-api.log 2>>${logpath}/micro-api.err.log &
+	  ;;
+	  *)
+	  echo "run.sh start micro <web|center_api|merchant_api|applet_api>"
+	  exit
+	  ;;
+  esac
+}
+
 start() {
   sub=$1
   shift
@@ -159,8 +206,14 @@ start() {
 	  api)
 	  start_api $*
 	  ;;
+		consul)
+	  start_consul
+	  ;;
+		micro)
+	  start_micro $*
+	  ;;
 	  *)
-	  echo "run.sh $0 <srv|api>"
+	  echo "run.sh $0 <srv|api|consul|micro>"
 	  exit
 	  ;;
   esac
