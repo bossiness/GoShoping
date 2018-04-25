@@ -92,6 +92,28 @@ center_apis() {
 
 merchant_apis() {
   echo 'start merchant apis'
+	api=$1
+  shift
+  case $api in
+	  auth)
+    echo 'start merchant auth api!'
+	  center-api --register_ttl=30 --register_interval=15 auth --api_service=com.btdxcx.merchant.api.auth --site_type=mini 1>>${logpath}/api/merchant/info.log 2>>${logpath}/api/merchant/error.log &
+	  ;;
+	  shop)
+    echo 'start merchant shop apis!'
+	  merchant --register_ttl=30 --register_interval=15 shop 1>>${logpath}/api/merchant/info.log 2>>${logpath}/api/merchant/error.log &
+		isSuccess
+	  ;;
+		taxons)
+		echo 'start merchant taxons apis!'
+	  merchant --register_ttl=30 --register_interval=15 taxons 1>>${logpath}/api/merchant/info.log 2>>${logpath}/api/merchant/error.log &
+		isSuccess
+	  ;;
+	  *)
+	  echo "run.sh start api merchant <auth|shop|taxons>"
+	  exit
+	  ;;
+  esac
 }
 
 applet_apis() {
@@ -113,7 +135,7 @@ applet_apis() {
 		isSuccess
 	  ;;
 	  *)
-	  echo "run.sh start api center <auth|shop|taxons>"
+	  echo "run.sh start api applet <auth|shop|taxons>"
 	  exit
 	  ;;
   esac
@@ -121,9 +143,9 @@ applet_apis() {
 
 isSuccess() {
 	if [ $? -eq 0 ] ; then
-		echo 'start center shop apis success!'
+		echo 'success!'
 	else
-		echo 'start center shop apis failure!'
+		echo 'failure!'
 	fi
 }
 
