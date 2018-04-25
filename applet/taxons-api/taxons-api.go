@@ -25,7 +25,7 @@ var (
 )
 
 const (
-	serviceName = "com.btdxcx.merchant.api.taxons"
+	serviceName = "com.btdxcx.applet.api.taxons"
 	clientName  = "com.btdxcx.shop.srv.taxons"
 )
 

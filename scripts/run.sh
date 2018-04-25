@@ -99,16 +99,20 @@ applet_apis() {
   shift
   case $api in
 	  auth)
-    echo 'start center auth api!'
+    echo 'start applet auth api!'
 	  center-api --register_ttl=30 --register_interval=15 auth --api_service=com.btdxcx.applet.api.auth --site_type=mini 1>>${logpath}/api/applet/info.log 2>>${logpath}/api/applet/error.log &
 	  ;;
 	  shop)
-    echo 'start center shop apis!'
-	  applet --register_ttl=30 --register_interval=15 shop 1>>${logpath}/api/center/info.log 2>>${logpath}/api/center/error.log &
+    echo 'start applet shop apis!'
+	  applet --register_ttl=30 --register_interval=15 shop 1>>${logpath}/api/applet/info.log 2>>${logpath}/api/applet/error.log &
+		isSuccess
+	  ;;
+		echo 'start applet taxons apis!'
+	  applet --register_ttl=30 --register_interval=15 taxons 1>>${logpath}/api/applet/info.log 2>>${logpath}/api/applet/error.log &
 		isSuccess
 	  ;;
 	  *)
-	  echo "run.sh start api center <auth|shop>"
+	  echo "run.sh start api center <auth|shop|taxons>"
 	  exit
 	  ;;
   esac
