@@ -97,7 +97,7 @@ merchant_apis() {
   case $api in
 	  auth)
     echo 'start merchant auth api!'
-	  center-api --register_ttl=30 --register_interval=15 auth --api_service=com.btdxcx.merchant.api.auth --site_type=mini 1>>${logpath}/api/merchant/info.log 2>>${logpath}/api/merchant/error.log &
+	  center-api --register_ttl=30 --register_interval=15 auth --api_service=com.btdxcx.merchant.api.auth --site_type=back 1>>${logpath}/api/merchant/info.log 2>>${logpath}/api/merchant/error.log &
 	  ;;
 	  shop)
     echo 'start merchant shop apis!'
