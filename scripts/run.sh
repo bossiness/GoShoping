@@ -40,7 +40,7 @@ start_srv() {
 	  shop-srv --database_url=${database_url} 1>>${logpath}/srv/info.log 2>>${logpath}/srv/error.log &
 	  ;;
 		taxons)
-    echo 'start jwtauth srv!'
+    echo 'start taxons srv!'
 	  taxons-srv --database_url=${database_url} 1>>${logpath}/srv/info.log 2>>${logpath}/srv/error.log &
 	  ;;
 	  *)
