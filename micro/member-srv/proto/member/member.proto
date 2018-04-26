@@ -1,0 +1,66 @@
+syntax = "proto3";
+
+package com.btdxcx.micro.srv.member;
+
+service Customer {
+	rpc CreateCustomer(CreateCustomerRequest) returns (CustomerResponse) {}
+	rpc ReadCustomers(ReadCustomersRequest) returns (ReadCustomersResponse) {}
+	rpc ReadCustomer (ReadCustomerRequest) returns (CustomerResponse);
+	rpc UpdateCustomer (UpdateCustomerRequest) returns (CustomerResponse);
+	rpc DeleteCustomer (DeleteCustomerRequest) returns (DeleteCustomerResponse);
+}
+
+message CreateCustomerRequest {
+	string shop_id = 1;
+	CustomerRecord record = 2;
+}
+
+message CustomerResponse {
+	CustomerRecord record = 1;
+}
+
+message ReadCustomersRequest {
+	string shop_id = 1;
+	int32 offset = 2;
+	int32 limit = 3;
+}
+
+message ReadCustomersResponse {
+	int32 offset = 1;
+	int32 limit = 2;
+	int32 total = 3;
+
+	repeated CustomerRecord records = 4;
+}
+
+message ReadCustomerRequest {
+	string shop_id = 1;
+	string username = 2;
+}
+
+message UpdateCustomerRequest {
+	string shop_id = 1;
+	CustomerRecord record = 2;
+}
+
+message DeleteCustomerRequest {
+	string shop_id = 1;
+	string username = 2;
+}
+
+message DeleteCustomerResponse {
+}
+
+message CustomerRecord {
+	string username = 1;
+	string firstName = 2;
+	string lastName = 3;
+	string phone = 4;
+	string email = 5;
+	string portrait = 6;
+	string role = 7;
+	
+	message VIP {
+
+	}
+}
