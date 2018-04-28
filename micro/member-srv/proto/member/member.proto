@@ -6,6 +6,7 @@ service Customer {
 	rpc CreateCustomer(CreateCustomerRequest) returns (CustomerResponse) {}
 	rpc ReadCustomers(ReadCustomersRequest) returns (ReadCustomersResponse) {}
 	rpc ReadCustomer (ReadCustomerRequest) returns (CustomerResponse);
+	rpc ReadCustomerFormName (ReadCustomerFormNameRequest) returns (CustomerResponse);
 	rpc UpdateCustomer (UpdateCustomerRequest) returns (CustomerResponse);
 	rpc DeleteCustomer (DeleteCustomerRequest) returns (DeleteCustomerResponse);
 }
@@ -35,32 +36,44 @@ message ReadCustomersResponse {
 
 message ReadCustomerRequest {
 	string shop_id = 1;
-	string username = 2;
+	string id = 2;
+}
+
+message ReadCustomerFormNameRequest {
+	string shop_id = 1;
+	string name = 2;
 }
 
 message UpdateCustomerRequest {
 	string shop_id = 1;
-	CustomerRecord record = 2;
+	string id = 2;
+	CustomerRecord record = 3;
 }
 
 message DeleteCustomerRequest {
 	string shop_id = 1;
-	string username = 2;
+	string id = 2;
 }
 
 message DeleteCustomerResponse {
 }
 
 message CustomerRecord {
-	string username = 1;
-	string firstName = 2;
-	string lastName = 3;
-	string phone = 4;
-	string email = 5;
-	string portrait = 6;
-	string role = 7;
-	
-	message VIP {
-
-	}
+	string id = 1;
+	string username = 2;
+	string firstName = 3;
+	string lastName = 4;
+	string phone = 5;
+	string email = 6;
+	string portrait = 7;
+	string gender = 8;
+	int64 birthday = 9;
+	repeated string groups = 10;
+	int64 registered_at = 11;
+	int64 access_at = 12;
+	int64 integral = 13;
+	int64 buy_number = 14;
+	int64 totalPurchaseAmount = 15;
+	string role = 16;
+	string superior = 17;
 }

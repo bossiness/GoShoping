@@ -32,9 +32,40 @@ func Deinit() {
 
 // Customer is Customer
 type Customer interface {
-	CreateCustomer(string, *proto.Customer) error
-	ReadCustomers(string, int, int) (*[]*proto.Customer, error)
-	ReadCustomer(string, string) (*proto.Customer ,error)
-	UpdateCustomer(string, string, *proto.Customer) error
+	CreateCustomer(string, *proto.CustomerRecord) error
+	ReadCustomers(string, int, int) (*[]*proto.CustomerRecord, error)
+	ReadCustomer(string, string) (*proto.CustomerRecord ,error)
+	ReadCustomerFromName(string, string) (*proto.CustomerRecord ,error)
+	UpdateCustomer(string, string, *proto.CustomerRecord) error
 	DeleteCustomer(string, string) error
+}
+
+// CreateCustomer create Customer
+func CreateCustomer(dbname string, record *proto.CustomerRecord) error {
+	return db.CreateCustomer(dbname, record)
+}
+
+// ReadCustomers read Customers
+func ReadCustomers(dbname string, offset int, limit int) (*[]*proto.CustomerRecord, error) {
+	return db.ReadCustomers(dbname, offset, limit)
+}
+
+// ReadCustomer read a Customer
+func ReadCustomer(dbname string, id string) (*proto.CustomerRecord ,error) {
+	return db.ReadCustomer(dbname, id)
+}
+
+// ReadCustomerFromName read a Customer
+func ReadCustomerFromName(dbname string, name string) (*proto.CustomerRecord ,error) {
+	return db.ReadCustomerFromName(dbname, name)
+}
+
+// UpdateCustomer update a Customer
+func UpdateCustomer(dbname string, id string, record *proto.CustomerRecord) error {
+	return db.UpdateCustomer(dbname, id, record)
+}
+
+// DeleteCustomer delete a Customer
+func DeleteCustomer(dbname string, id string) error {
+	return db.DeleteCustomer(dbname, id)
 }
