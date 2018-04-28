@@ -9,6 +9,7 @@ type DB interface {
 	Init() error
 	Deinit()
 	Customer
+	AdminUser
 }
 
 var (
@@ -30,7 +31,7 @@ func Deinit() {
 	db.Deinit()
 }
 
-// Customer is Customer
+// Customer is Customer db interface
 type Customer interface {
 	CreateCustomer(string, *proto.CustomerRecord) error
 	ReadCustomers(string, int, int) (*[]*proto.CustomerRecord, error)
@@ -68,4 +69,44 @@ func UpdateCustomer(dbname string, id string, record *proto.CustomerRecord) erro
 // DeleteCustomer delete a Customer
 func DeleteCustomer(dbname string, id string) error {
 	return db.DeleteCustomer(dbname, id)
+}
+
+// AdminUser is AdminUser db interface
+type AdminUser interface {
+	CreateAdminUser(string, *proto.AdminUserRecord) error
+	ReadAdminUsers(string, int, int) (*[]*proto.AdminUserRecord, error)
+	ReadAdminUser(string, string) (*proto.AdminUserRecord ,error)
+	ReadAdminUserFromName(string, string) (*proto.AdminUserRecord ,error)
+	UpdateAdminUser(string, string, *proto.AdminUserRecord) error
+	DeleteAdminUser(string, string) error
+}
+
+// CreateAdminUser create AdminUser
+func CreateAdminUser(dbname string, record *proto.AdminUserRecord) error {
+	return db.CreateAdminUser(dbname, record)
+}
+
+// ReadAdminUsers read AdminUsers
+func ReadAdminUsers(dbname string, offset int, limit int) (*[]*proto.AdminUserRecord, error) {
+	return db.ReadAdminUsers(dbname, offset, limit)
+}
+
+// ReadAdminUser read a AdminUser
+func ReadAdminUser(dbname string, id string) (*proto.AdminUserRecord ,error) {
+	return db.ReadAdminUser(dbname, id)
+}
+
+// ReadAdminUserFromName read a AdminUser
+func ReadAdminUserFromName(dbname string, name string) (*proto.AdminUserRecord ,error) {
+	return db.ReadAdminUserFromName(dbname, name)
+}
+
+// UpdateAdminUser update a AdminUser
+func UpdateAdminUser(dbname string, id string, record *proto.AdminUserRecord) error {
+	return db.UpdateAdminUser(dbname, id, record)
+}
+
+// DeleteAdminUser delete a AdminUser
+func DeleteAdminUser(dbname string, id string) error {
+	return db.DeleteAdminUser(dbname, id)
 }

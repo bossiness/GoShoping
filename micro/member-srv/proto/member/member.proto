@@ -74,6 +74,76 @@ message CustomerRecord {
 	int64 integral = 13;
 	int64 buy_number = 14;
 	int64 totalPurchaseAmount = 15;
-	string role = 16;
+	repeated string role = 16;
 	string superior = 17;
+}
+
+service AdminUser {
+	rpc CreateAdminUser(CreateAdminUserRequest) returns (AdminUserResponse) {}
+	rpc ReadAdminUsers(ReadAdminUsersRequest) returns (ReadAdminUsersResponse) {}
+	rpc ReadAdminUser (ReadAdminUserRequest) returns (AdminUserResponse);
+	rpc ReadAdminUserFormName (ReadAdminUserFormNameRequest) returns (AdminUserResponse);
+	rpc UpdateAdminUser (UpdateAdminUserRequest) returns (AdminUserResponse);
+	rpc DeleteAdminUser (DeleteAdminUserRequest) returns (DeleteAdminUserResponse);
+}
+
+message CreateAdminUserRequest {
+	string shop_id = 1;
+	AdminUserRecord record = 2;
+}
+
+message AdminUserResponse {
+	AdminUserRecord record = 1;
+}
+
+message ReadAdminUsersRequest {
+	string shop_id = 1;
+	int32 offset = 2;
+	int32 limit = 3;
+}
+
+message ReadAdminUsersResponse {
+	int32 offset = 1;
+	int32 limit = 2;
+	int32 total = 3;
+
+	repeated AdminUserRecord records = 4;
+}
+
+message ReadAdminUserRequest {
+	string shop_id = 1;
+	string id = 2;
+}
+
+message ReadAdminUserFormNameRequest {
+	string shop_id = 1;
+	string name = 2;
+}
+
+message UpdateAdminUserRequest {
+	string shop_id = 1;
+	string id = 2;
+	AdminUserRecord record = 3;
+}
+
+message DeleteAdminUserRequest {
+	string shop_id = 1;
+	string id = 2;
+}
+
+message DeleteAdminUserResponse {
+}
+
+message AdminUserRecord {
+	string id = 1;
+	string username = 2;
+	string firstName = 3;
+	string lastName = 4;
+	string phone = 5;
+	string email = 6;
+	string portrait = 7;
+	int64 registered_at = 8;
+	int64 access_at = 9;
+	bool enable = 10;
+	repeated string role = 11;
 }

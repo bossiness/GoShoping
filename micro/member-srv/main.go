@@ -46,6 +46,7 @@ func main() {
 
 	// Register Handler
 	proto.RegisterCustomerHandler(service.Server(), new(handler.CustomerHandler))
+	proto.RegisterAdminUserHandler(service.Server(), new(handler.AdminUserHandler))
 
 	// Initialise service
 	service.Init()

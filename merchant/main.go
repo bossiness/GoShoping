@@ -1,11 +1,11 @@
 package main
 
 import (
-	"btdxcx.com/merchant/product-api"
 	"os"
 
+	"btdxcx.com/merchant/member-api"
+	"btdxcx.com/merchant/product-api"
 	"btdxcx.com/merchant/taxons-api"
-
 
 	ccli "github.com/micro/cli"
 	"github.com/micro/go-micro/cmd"
@@ -35,6 +35,7 @@ func main() {
 	app := cmd.App()
 	app.Commands = append(app.Commands, taxonsapi.Commands()...)
 	app.Commands = append(app.Commands, productapi.Commands()...)
+	app.Commands = append(app.Commands, memberapi.Commands()...)
 	app.Action = func(context *ccli.Context) {
 		ccli.ShowAppHelp(context)
 	}

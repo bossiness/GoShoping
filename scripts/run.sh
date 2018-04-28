@@ -43,28 +43,97 @@ stop_consul() {
 }
 
 ### SRV
+
+start_account_srv() {
+	if [ -f "${GOPATH}/bin/account-srv" ] ; then
+		echo 'start account srv!'
+		account-srv --database_url=${database_url} 1>>${logpath}/srv/info.log 2>>${logpath}/srv/error.log &
+	else
+		echo '不存在 account-srv! 请安装...'
+	fi
+}
+
+start_jwtauth_srv() {
+	if [ -f "${GOPATH}/bin/jwtauth-srv" ] ; then
+		echo 'start jwtauth srv!'
+	  jwtauth-srv --database_url=${database_url} 1>>${logpath}/srv/info.log 2>>${logpath}/srv/error.log &
+	else
+		echo '不存在 jwtauth-srv! 请安装...'
+	fi
+}
+
+start_member_srv() {
+	if [ -f "${GOPATH}/bin/member-srv" ] ; then
+		echo 'start member srv!'
+	  member-srv --database_url=${database_url} 1>>${logpath}/srv/info.log 2>>${logpath}/srv/error.log &
+	else
+		echo '不存在 member-srv! 请安装...'
+	fi
+}
+
+start_order_srv() {
+	if [ -f "${GOPATH}/bin/order-srv" ] ; then
+		echo 'start order srv!'
+		order-srv --database_url=${database_url} 1>>${logpath}/srv/info.log 2>>${logpath}/srv/error.log &
+	else
+		echo '不存在 order-srv! 请安装...'
+	fi
+}
+
+start_product_srv() {
+	if [ -f "${GOPATH}/bin/product-srv" ] ; then
+		echo 'start product srv!'
+	  product-srv --database_url=${database_url} 1>>${logpath}/srv/info.log 2>>${logpath}/srv/error.log &
+	else
+		echo '不存在 product-srv! 请安装...'
+	fi
+}
+
+start_shop_srv() {
+	if [ -f "${GOPATH}/bin/shop-srv" ] ; then
+		echo 'start shop srv!'
+	  shop-srv --database_url=${database_url} 1>>${logpath}/srv/info.log 2>>${logpath}/srv/error.log &
+	else
+		echo '不存在 shop-srv! 请安装...'
+	fi
+}
+
+start_taxons_srv() {
+	if [ -f "${GOPATH}/bin/taxons-srv" ] ; then
+		echo 'start taxons srv!'
+	  taxons-srv --database_url=${database_url} 1>>${logpath}/srv/info.log 2>>${logpath}/srv/error.log &
+	else
+		echo '不存在 taxons-srv! 请安装...'
+	fi
+}
+
 start_srv() {
   srv=$1
   shift
   case $srv in
 	  account)
-    echo 'start account srv!'
-	  account-srv --database_url=${database_url} 1>>${logpath}/srv/info.log 2>>${logpath}/srv/error.log &
+    start_account_srv
 	  ;;
 	  jwtauth)
-    echo 'start jwtauth srv!'
-	  jwtauth-srv --database_url=${database_url} 1>>${logpath}/srv/info.log 2>>${logpath}/srv/error.log &
+    start_jwtauth_srv
+	  ;;
+		member)
+    start_member_srv
+	  ;;
+		order)
+    start_order_srv
+	  ;;
+		product)
+    start_product_srv
 	  ;;
     shop)
-    echo 'start shop srv!'
-	  shop-srv --database_url=${database_url} 1>>${logpath}/srv/info.log 2>>${logpath}/srv/error.log &
+    start_shop_srv
 	  ;;
 		taxons)
-    echo 'start taxons srv!'
-	  taxons-srv --database_url=${database_url} 1>>${logpath}/srv/info.log 2>>${logpath}/srv/error.log &
+    start_taxons_srv
 	  ;;
 	  *)
-	  echo "run.sh start $0 <account|jwtauth|shop|taxons>"
+	  echo "run.sh start $0 <account|jwtauth|member|order|product|shop|taxons>"
 	  exit
 	  ;;
   esac
@@ -122,15 +191,13 @@ merchant_apis() {
 	  shop)
     echo 'start merchant shop apis!'
 	  merchant --register_ttl=30 --register_interval=15 shop 1>>${logpath}/api/merchant/info.log 2>>${logpath}/api/merchant/error.log &
-		isSuccess
 	  ;;
 		taxons)
 		echo 'start merchant taxons apis!'
 	  merchant --register_ttl=30 --register_interval=15 taxons 1>>${logpath}/api/merchant/info.log 2>>${logpath}/api/merchant/error.log &
-		isSuccess
 	  ;;
 	  *)
-	  echo "run.sh start api merchant <auth|shop|taxons>"
+	  echo "run.sh start api merchant <auth|member|shop|taxons>"
 	  exit
 	  ;;
   esac
@@ -147,26 +214,16 @@ applet_apis() {
 	  shop)
     echo 'start applet shop apis!'
 	  applet --register_ttl=30 --register_interval=15 shop 1>>${logpath}/api/applet/info.log 2>>${logpath}/api/applet/error.log &
-		isSuccess
 	  ;;
 		taxons)
 		echo 'start applet taxons apis!'
 	  applet --register_ttl=30 --register_interval=15 taxons 1>>${logpath}/api/applet/info.log 2>>${logpath}/api/applet/error.log &
-		isSuccess
 	  ;;
 	  *)
 	  echo "run.sh start api applet <auth|shop|taxons>"
 	  exit
 	  ;;
   esac
-}
-
-isSuccess() {
-	if [ $? -eq 0 ] ; then
-		echo 'success!'
-	else
-		echo 'failure!'
-	fi
 }
 
 start_micro() {

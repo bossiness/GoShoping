@@ -19,6 +19,17 @@ import (
 	jwrapper "btdxcx.com/micro/jwtauth-srv/wrapper"
 )
 
+// Commands add command
+func Commands() []cli.Command {
+	return []cli.Command{
+		{
+			Name:   "taxons",
+			Usage:  "Run taxons api",
+			Action: api,
+		},
+	}
+}
+
 // API is APIs
 type API struct{}
 
@@ -182,17 +193,6 @@ func api(ctx *cli.Context) {
 		log.Fatal(err)
 	}
 
-}
-
-// Commands add command
-func Commands() []cli.Command {
-	return []cli.Command{
-		{
-			Name:   "taxons",
-			Usage:  "Run taxons api",
-			Action: api,
-		},
-	}
 }
 
 func returns200(b *restful.RouteBuilder) {

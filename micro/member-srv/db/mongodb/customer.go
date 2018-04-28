@@ -30,7 +30,7 @@ type Customer struct {
 	Integral            int64         `bson:"integral,omitempty"`
 	BuyNumber           int64         `bson:"buy_number,omitempty"`
 	TotalPurchaseAmount int64         `bson:"totalPurchaseAmount,omitempty"`
-	Role                string        `bson:"role,omitempty"`
+	Role                []string      `bson:"role,omitempty"`
 	Superior            string        `bson:"superior,omitempty"`
 }
 
@@ -175,11 +175,11 @@ func (m *Mongo) UpdateCustomer(dbname string, id string, record *proto.CustomerR
 		"firstName": record.FirstName,
 		"lastName":  record.LastName,
 		"phone":     record.Phone,
-		"email": record.Email,
-		"portrait": record.Portrait,
-		"gender": record.Gender,
-     	"birthday":  record.Birthday,
-     	"groups": record.Groups, 
+		"email":     record.Email,
+		"portrait":  record.Portrait,
+		"gender":    record.Gender,
+		"birthday":  record.Birthday,
+		"groups":    record.Groups,
 	}}
 
 	return c.UpdateId(bson.ObjectIdHex(id), updataData)

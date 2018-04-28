@@ -19,17 +19,16 @@ import (
 )
 
 const (
-	cutomersAPIService = "com.btdxcx.merchant.api.cutomers"
-	clientName         = "com.btdxcx.micro.srv.member"
+	usersAPIService = "com.btdxcx.merchant.api.users"
 )
 
 var (
-	customerCl proto.CustomerClient
+	adminUserCl proto.AdminUserClient
 )
 
-func cutomersAPIs(ctx *cli.Context) {
+func adminuserAPIs(ctx *cli.Context) {
 	service := web.NewService(
-		web.Name(cutomersAPIService),
+		web.Name(usersAPIService),
 		web.RegisterTTL(
 			time.Duration(ctx.GlobalInt("register_ttl"))*time.Second,
 		),
@@ -53,13 +52,14 @@ func cutomersAPIs(ctx *cli.Context) {
 	ws.Filter(logwrapper.NCSACommonLogFormatLogger())
 	ws.Consumes(restful.MIME_XML, restful.MIME_JSON)
 	ws.Produces(restful.MIME_JSON, restful.MIME_XML)
-	ws.Path("/cutomers")
+	ws.Path("/users")
 
-	ws.Route(ws.POST("").To(api.createCustomer))
-	ws.Route(ws.GET("").To(api.readCustomers))
-	ws.Route(ws.GET("/{id}").To(api.readCustomer))
-	ws.Route(ws.PUT("/{id}").To(api.updateCustomer))
-	ws.Route(ws.DELETE("/{code}").To(api.deleteCustomer))
+	ws.Route(ws.POST("").To(api.createAdminUser))
+	ws.Route(ws.GET("").To(api.readAdminUsers))
+	ws.Route(ws.GET("/{id}").To(api.readAdminUser))
+	ws.Route(ws.PUT("/{id}").To(api.updateAdminUser))
+	ws.Route(ws.DELETE("/{id}").To(api.deleteAdminUser))
+	ws.Route(ws.GET("/profile/{name}").To(api.readAdminUserFromName))
 
 	wc.Add(ws)
 	service.Handle("/", wc)
@@ -70,19 +70,19 @@ func cutomersAPIs(ctx *cli.Context) {
 
 }
 
-func (api *API) createCustomer(req *restful.Request, rsp *restful.Response) {
+func (api *API) createAdminUser(req *restful.Request, rsp *restful.Response) {
 	ctx := shopkey.NewNewContext(req.Request.Context(), req.HeaderParameter("X-SHOP-KEY"))
 	ctx = jwrapper.NewContext(ctx, req.HeaderParameter("Authorization"))
 
-	in := new(proto.CreateCustomerRequest)
-	record := new(proto.CustomerRecord)
+	in := new(proto.CreateAdminUserRequest)
+	record := new(proto.AdminUserRecord)
 	if err := req.ReadEntity(&record); err != nil {
 		rsp.WriteError(http.StatusBadRequest, err)
 		return
 	}
 	in.Record = record
 
-	out, err := customerCl.CreateCustomer(ctx, in)
+	out, err := adminUserCl.CreateAdminUser(ctx, in)
 	if err != nil {
 		customerror.WriteError(err, rsp)
 		return
@@ -93,11 +93,11 @@ func (api *API) createCustomer(req *restful.Request, rsp *restful.Response) {
 	}
 }
 
-func (api *API) readCustomers(req *restful.Request, rsp *restful.Response) {
+func (api *API) readAdminUsers(req *restful.Request, rsp *restful.Response) {
 	ctx := shopkey.NewNewContext(req.Request.Context(), req.HeaderParameter("X-SHOP-KEY"))
 	ctx = jwrapper.NewContext(ctx, req.HeaderParameter("Authorization"))
 
-	in := new(proto.ReadCustomersRequest)
+	in := new(proto.ReadAdminUsersRequest)
 	offset, err1 := strconv.Atoi(req.QueryParameter("offset"))
 	if err1 != nil {
 		offset = 0
@@ -109,7 +109,7 @@ func (api *API) readCustomers(req *restful.Request, rsp *restful.Response) {
 	in.Offset = int32(offset)
 	in.Limit = int32(limit)
 
-	out, err := customerCl.ReadCustomers(ctx, in)
+	out, err := adminUserCl.ReadAdminUsers(ctx, in)
 	if err != nil {
 		customerror.WriteError(err, rsp)
 		return
@@ -120,14 +120,14 @@ func (api *API) readCustomers(req *restful.Request, rsp *restful.Response) {
 	}
 }
 
-func (api *API) readCustomer(req *restful.Request, rsp *restful.Response) {
+func (api *API) readAdminUser(req *restful.Request, rsp *restful.Response) {
 	ctx := shopkey.NewNewContext(req.Request.Context(), req.HeaderParameter("X-SHOP-KEY"))
 	ctx = jwrapper.NewContext(ctx, req.HeaderParameter("Authorization"))
 
-	in := new(proto.ReadCustomerRequest)
+	in := new(proto.ReadAdminUserRequest)
 	in.Id = req.PathParameter("id")
 
-	out, err := customerCl.ReadCustomer(ctx, in)
+	out, err := adminUserCl.ReadAdminUser(ctx, in)
 	if err != nil {
 		customerror.WriteError(err, rsp)
 		return
@@ -138,20 +138,38 @@ func (api *API) readCustomer(req *restful.Request, rsp *restful.Response) {
 	}
 }
 
-func (api *API) updateCustomer(req *restful.Request, rsp *restful.Response) {
+func (api *API) readAdminUserFromName(req *restful.Request, rsp *restful.Response) {
 	ctx := shopkey.NewNewContext(req.Request.Context(), req.HeaderParameter("X-SHOP-KEY"))
 	ctx = jwrapper.NewContext(ctx, req.HeaderParameter("Authorization"))
 
-	in := new(proto.UpdateCustomerRequest)
+	in := new(proto.ReadAdminUserFormNameRequest)
+	in.Name = req.PathParameter("name")
+
+	out, err := adminUserCl.ReadAdminUserFormName(ctx, in)
+	if err != nil {
+		customerror.WriteError(err, rsp)
+		return
+	}
+
+	if err := rsp.WriteEntity(out.Record); err != nil {
+		rsp.WriteError(http.StatusInternalServerError, err)
+	}
+}
+
+func (api *API) updateAdminUser(req *restful.Request, rsp *restful.Response) {
+	ctx := shopkey.NewNewContext(req.Request.Context(), req.HeaderParameter("X-SHOP-KEY"))
+	ctx = jwrapper.NewContext(ctx, req.HeaderParameter("Authorization"))
+
+	in := new(proto.UpdateAdminUserRequest)
 	in.Id = req.PathParameter("id")
-	record := new(proto.CustomerRecord)
+	record := new(proto.AdminUserRecord)
 	if err := req.ReadEntity(&record); err != nil {
 		rsp.WriteError(http.StatusBadRequest, err)
 		return
 	}
 	in.Record = record
 
-	out, err := customerCl.UpdateCustomer(ctx, in)
+	out, err := adminUserCl.UpdateAdminUser(ctx, in)
 	if err != nil {
 		customerror.WriteError(err, rsp)
 		return
@@ -162,14 +180,14 @@ func (api *API) updateCustomer(req *restful.Request, rsp *restful.Response) {
 	}
 }
 
-func (api *API) deleteCustomer(req *restful.Request, rsp *restful.Response) {
+func (api *API) deleteAdminUser(req *restful.Request, rsp *restful.Response) {
 	ctx := shopkey.NewNewContext(req.Request.Context(), req.HeaderParameter("X-SHOP-KEY"))
 	ctx = jwrapper.NewContext(ctx, req.HeaderParameter("Authorization"))
 
-	in := new(proto.DeleteCustomerRequest)
+	in := new(proto.DeleteAdminUserRequest)
 	in.Id = req.PathParameter("id")
 
-	out, err := customerCl.DeleteCustomer(ctx, in)
+	out, err := adminUserCl.DeleteAdminUser(ctx, in)
 	if err != nil {
 		customerror.WriteError(err, rsp)
 		return
