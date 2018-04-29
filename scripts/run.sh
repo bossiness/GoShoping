@@ -197,11 +197,17 @@ merchant_apis() {
 	  merchant --register_ttl=30 --register_interval=15 shop 1>>${logpath}/api/merchant/info.log 2>>${logpath}/api/merchant/error.log &
 	  ;;
 		taxons)
-		echo 'start merchant taxons apis!'
 	  merchant --register_ttl=30 --register_interval=15 taxons 1>>${logpath}/api/merchant/info.log 2>>${logpath}/api/merchant/error.log &
-	  ;;
-	  *)
-	  echo "run.sh start api merchant <auth|member|shop|taxons>"
+	  echo 'start merchant taxons apis!'
+		;;
+		product)
+	  merchant --register_ttl=30 --register_interval=15 product 1>>${logpath}/api/merchant/info.log 2>>${logpath}/api/merchant/error.log &
+		echo 'start merchant product apis!'
+		merchant --register_ttl=30 --register_interval=15 products 1>>${logpath}/api/merchant/info.log 2>>${logpath}/api/merchant/error.log &
+	  echo 'start merchant products apis!'
+		;;
+		*)
+	  echo "run.sh start api merchant <auth|member|shop|taxons|product>"
 	  exit
 	  ;;
   esac
