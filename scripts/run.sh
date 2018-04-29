@@ -7,6 +7,10 @@ shift
 
 ## set config
 ### logs path
+###
+## 测试数据库
+## mongod --dbpath /Users/jigang.duan/WorkSpace/data/db/
+###
 logpath=/home/jigangduan/workspace/micro/logs
 env_cloud=YES
 if [ ! -d $logpath ] ; then

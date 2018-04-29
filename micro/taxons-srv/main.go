@@ -14,7 +14,7 @@ import (
 	"github.com/micro/go-micro/server"
 
 	"btdxcx.com/micro/taxons-srv/db/mongodb"
-	proto "btdxcx.com/micro/taxons-srv/proto/imp"
+	proto "btdxcx.com/micro/taxons-srv/proto/taxons"
 )
 
 func main() {
@@ -23,7 +23,7 @@ func main() {
 		micro.Server(
 			server.NewServer(server.WrapHandler(wrapper.LogWrapper)),
 		),
-		micro.Name("com.btdxcx.shop.srv.taxons"),
+		micro.Name("com.btdxcx.micro.srv.taxons"),
 		micro.Version("v1"),
 		micro.RegisterTTL(time.Second*30),
 		micro.RegisterInterval(time.Second*15),
@@ -35,13 +35,13 @@ func main() {
 			cli.StringFlag{
 				Name:   "database_url",
 				EnvVar: "DATABASE_URL",
-				Usage:  "The database URL e.g root@tcp(127.0.0.1:3306)/auth",
+				Usage:  "The database URL e.g root@tcp(127.0.0.1:3306)/taxons",
 			},
 		),
 
 		micro.Action(func(c *cli.Context) {
 			if len(c.String("database_url")) > 0 {
-				mongodb.Url = c.String("database_url")
+				mongodb.URL = c.String("database_url")
 			}
 		}),
 
@@ -52,10 +52,10 @@ func main() {
 	proto.RegisterTaxonsHandler(service.Server(), new(handler.Handler))
 
 	// Register Struct as Subscriber
-	micro.RegisterSubscriber("topic.com.btdxcx.shop.srv.taxons", service.Server(), new(subscriber.Receiver))
+	micro.RegisterSubscriber("topic.com.btdxcx.micro.srv.taxons", service.Server(), new(subscriber.Receiver))
 
 	// Register Function as Subscriber
-	micro.RegisterSubscriber("topic.com.btdxcx.shop.srv.taxons", service.Server(), subscriber.Handler)
+	micro.RegisterSubscriber("topic.com.btdxcx.micro.srv.taxons", service.Server(), subscriber.Handler)
 
 	// Initialise service
 	service.Init()
@@ -64,6 +64,7 @@ func main() {
 	if err := db.Init(); err != nil {
 		log.Fatal(err)
 	}
+	defer db.Deinit()
 
 	// Run service
 	if err := service.Run(); err != nil {

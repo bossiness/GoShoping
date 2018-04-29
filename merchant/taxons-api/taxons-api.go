@@ -15,7 +15,7 @@ import (
 	"github.com/micro/go-micro/client"
 	"github.com/micro/go-web"
 
-	prtot "btdxcx.com/micro/taxons-srv/proto/imp"
+	proto "btdxcx.com/micro/taxons-srv/proto/taxons"
 	jwrapper "btdxcx.com/micro/jwtauth-srv/wrapper"
 )
 
@@ -34,100 +34,107 @@ func Commands() []cli.Command {
 type API struct{}
 
 var (
-	cl prtot.TaxonsClient
+	cl proto.TaxonsClient
 )
 
 const (
 	serviceName = "com.btdxcx.merchant.api.taxons"
-	clientName  = "com.btdxcx.shop.srv.taxons"
+	clientName  = "com.btdxcx.micro.srv.taxons"
 )
 
 func (api *API) rootTaxons(req *restful.Request, rsp *restful.Response) {
 	ctx := shopkey.NewNewContext(req.Request.Context(), req.HeaderParameter("X-SHOP-KEY"))
 	ctx = jwrapper.NewContextCustomScope(ctx, "back")
 
-	response, err := cl.Root(ctx, &prtot.TaxonsShopIDRequest{})
+	response, err := cl.RootTaxons(ctx, &proto.RootTaxonsRequest{})
 	if err != nil {
 		writeError(err, rsp)
 		return
 	}
 
-	rsp.WriteEntity(response.Children)
+	rsp.WriteEntity(response.Message.Children)
 }
 
 func (api *API) createTaxons(req *restful.Request, rsp *restful.Response) {
+	ctx := shopkey.NewNewContext(req.Request.Context(), req.HeaderParameter("X-SHOP-KEY"))
+	ctx = jwrapper.NewContext(ctx, req.HeaderParameter("Authorization"))
 
-	request := new(prtot.TasonsCreateRequest)
-	if err := req.ReadEntity(&request); err != nil {
+	record := new(proto.TaxonsRecord)
+	if err := req.ReadEntity(&record); err != nil {
 		rsp.WriteError(http.StatusBadRequest, err)
 		return
 	}
+	request := new(proto.CreateTasonsRequest)
+	request.Record = record
 
-	ctx := shopkey.NewNewContext(req.Request.Context(), req.HeaderParameter("X-SHOP-KEY"))
-	ctx = jwrapper.NewContext(ctx, req.HeaderParameter("Authorization"))
-	response, err := cl.Create(ctx, request)
-
+	response, err := cl.CreateTaxons(ctx, request)
 	if err != nil {
 		writeError(err, rsp)
 		return
 	}
 
-	rsp.WriteEntity(response)
+	if err := rsp.WriteEntity(response.Record); err != nil {
+		rsp.WriteError(http.StatusInternalServerError, err)
+	}
 }
 
 func (api *API) createChildren(req *restful.Request, rsp *restful.Response) {
+	ctx := shopkey.NewNewContext(req.Request.Context(), req.HeaderParameter("X-SHOP-KEY"))
+	ctx = jwrapper.NewContext(ctx, req.HeaderParameter("Authorization"))
 
-	request := new(prtot.TaxonsRequest)
-	if err := req.ReadEntity(&request); err != nil {
+	record := new(proto.TaxonsRecord)
+	if err := req.ReadEntity(&record); err != nil {
 		rsp.WriteError(http.StatusBadRequest, err)
 		return
 	}
-	ctx := shopkey.NewNewContext(req.Request.Context(), req.HeaderParameter("X-SHOP-KEY"))
-	ctx = jwrapper.NewContext(ctx, req.HeaderParameter("Authorization"))
+	request := new(proto.CreateChildrenTaxonsRequest)
 	request.Code = req.PathParameter("code")
+	request.Record = record
 
-	response, err := cl.CreateChildren(ctx, request)
-
+	response, err := cl.CreateChildrenTaxons(ctx, request)
 	if err != nil {
 		writeError(err, rsp)
 		return
 	}
 
-	if err := rsp.WriteEntity(response); err != nil {
+	if err := rsp.WriteEntity(response.Record); err != nil {
 		rsp.WriteError(http.StatusInternalServerError, err)
 	}
 }
 
 func (api *API) updateTaxons(req *restful.Request, rsp *restful.Response) {
+	ctx := shopkey.NewNewContext(req.Request.Context(), req.HeaderParameter("X-SHOP-KEY"))
+	ctx = jwrapper.NewContext(ctx, req.HeaderParameter("Authorization"))
 
-	request := new(prtot.TaxonsRequest)
-	if err := req.ReadEntity(&request); err != nil {
+	record := new(proto.TaxonsRecord)
+	if err := req.ReadEntity(&record); err != nil {
 		rsp.WriteError(http.StatusBadRequest, err)
 		return
 	}
+	request := new(proto.UpdateTaxonsRequest)
 	request.Code = req.PathParameter("code")
+	request.Record = record
 
-	ctx := shopkey.NewNewContext(req.Request.Context(), req.HeaderParameter("X-SHOP-KEY"))
-	ctx = jwrapper.NewContext(ctx, req.HeaderParameter("Authorization"))
-	response, err := cl.Update(ctx, request)
+	response, err := cl.UpdateTaxons(ctx, request)
 
 	if err != nil {
 		writeError(err, rsp)
 		return
 	}
 
-	if err := rsp.WriteEntity(response); err != nil {
+	if err := rsp.WriteEntity(response.Record); err != nil {
 		rsp.WriteError(http.StatusInternalServerError, err)
 	}
 }
 
 func (api *API) deleteTaxons(req *restful.Request, rsp *restful.Response) {
-
-	code := req.PathParameter("code")
-
 	ctx := shopkey.NewNewContext(req.Request.Context(), req.HeaderParameter("X-SHOP-KEY"))
 	ctx = jwrapper.NewContext(ctx, req.HeaderParameter("Authorization"))
-	response, err := cl.Delete(ctx, &prtot.TasonsDeleteRequest{Code: code})
+
+	request := new(proto.DeleteTasonsRequest)
+	request.Code = req.PathParameter("code")
+	
+	response, err := cl.DeleteTaxons(ctx, request)
 
 	if err != nil {
 		writeError(err, rsp)
@@ -164,7 +171,7 @@ func api(ctx *cli.Context) {
 	shopkeyWrapper := shopkey.NewClientWrapper("X-SHOP-KEY", "back")
 	tokenWrapper := jwrapper.NewClientWrapper("back")
 
-	cl = prtot.NewTaxonsClient(
+	cl = proto.NewTaxonsClient(
 		clientName, 
 		shopkeyWrapper(tokenWrapper(client.DefaultClient)),
 	)
@@ -196,7 +203,7 @@ func api(ctx *cli.Context) {
 }
 
 func returns200(b *restful.RouteBuilder) {
-	b.Returns(http.StatusOK, "OK", prtot.TaxonsMessage{})
+	b.Returns(http.StatusOK, "OK", proto.TaxonsMessage{})
 }
 
 func returns500(b *restful.RouteBuilder) {

@@ -14,33 +14,33 @@ import (
 	"github.com/micro/go-micro/client"
 	"github.com/micro/go-web"
 
-	prtot "btdxcx.com/micro/taxons-srv/proto/imp"
+	proto "btdxcx.com/micro/taxons-srv/proto/taxons"
 )
 
 // API is APIs
 type API struct{}
 
 var (
-	cl prtot.TaxonsClient
+	cl proto.TaxonsClient
 )
 
 const (
 	serviceName = "com.btdxcx.applet.api.taxons"
-	clientName  = "com.btdxcx.shop.srv.taxons"
+	clientName  = "com.btdxcx.micro.srv.taxons"
 )
 
 func (api *API) rootTaxons(req *restful.Request, rsp *restful.Response) {
 	ctx := shopkey.NewNewContext(req.Request.Context(), req.HeaderParameter("X-SHOP-KEY"))
 
-	response, err := cl.Root(ctx, &prtot.TaxonsShopIDRequest{})
+	in := proto.RootTaxonsRequest{}
+	response, err := cl.RootTaxons(ctx, &in)
 	if err != nil {
 		writeError(err, rsp)
 		return
 	}
 
-	rsp.WriteEntity(response.Children)
+	rsp.WriteEntity(response.Message.Children)
 }
-
 
 
 func writeError(err error, rsp *restful.Response) {
@@ -67,7 +67,7 @@ func api(ctx *cli.Context) {
 
 	shopkeyWrapper := shopkey.NewClientWrapper("X-SHOP-KEY", "mini")
 
-	cl = prtot.NewTaxonsClient(
+	cl = proto.NewTaxonsClient(
 		clientName, 
 		shopkeyWrapper(client.DefaultClient),
 	)

@@ -72,9 +72,9 @@ func api(ctx *cli.Context) {
 	ws.Route(ws.GET("/{shopID}").To(api.read))
 	ws.Route(ws.PUT("/{shopID}").To(api.update))
 	ws.Route(ws.DELETE("/{shopID}").To(api.delete))
-	ws.Route(ws.PUT("/{shopID}/submin").To(api.submin))
-	ws.Route(ws.PUT("/{shopID}/audit").To(api.audit))
-	ws.Route(ws.PUT("/{shopID}/cancel").To(api.cancel))
+	ws.Route(ws.PATCH("/{shopID}/submit").To(api.submit))
+	ws.Route(ws.PATCH("/{shopID}/audit").To(api.audit))
+	ws.Route(ws.PATCH("/{shopID}/cancel").To(api.cancel))
 
 	wc.Add(ws)
 	service.Handle("/", wc)
@@ -189,7 +189,7 @@ func (api *API) delete(req *restful.Request, rsp *restful.Response) {
 	rsp.WriteHeader(http.StatusNoContent)
 }
 
-func (api *API) submin(req *restful.Request, rsp *restful.Response) {
+func (api *API) submit(req *restful.Request, rsp *restful.Response) {
 	updateState(req, rsp, dproto.State_reviewing)
 	rsp.WriteHeader(http.StatusNoContent)
 }

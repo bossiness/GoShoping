@@ -4,7 +4,7 @@ import (
 	"context"
 	"github.com/micro/go-log"
 
-	proto "btdxcx.com/micro/taxons-srv/proto/imp"
+	proto "btdxcx.com/micro/taxons-srv/proto/taxons"
 )
 
 // Receiver receive Struct as Subscriber

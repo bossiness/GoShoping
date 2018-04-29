@@ -1,0 +1,108 @@
+syntax = "proto3";
+
+package com.btdxcx.micro.srv.taxons;
+
+service Taxons {
+	rpc RootTaxons (RootTaxonsRequest) returns (RootTaxonsResponse) {}
+	rpc CreateTaxons (CreateTasonsRequest) returns (CreateTasonsResponse);
+	rpc CreateChildrenTaxons (CreateChildrenTaxonsRequest) returns (CreateChildrenTaxonsResponse);
+	rpc UpdateTaxons (UpdateTaxonsRequest) returns (UpdateTaxonsResponse);
+	rpc DeleteTaxons (DeleteTasonsRequest) returns (DeleteTasonsResponse);
+
+	rpc Stream(StreamingRequest) returns (stream StreamingResponse) {}
+	rpc PingPong(stream Ping) returns (stream Pong) {}
+}
+
+message TaxonsRecord {
+	string code = 1;
+  string name = 2;
+	string description = 3;
+	int32 position = 4;
+
+  repeated Image images = 5;
+}
+
+message RootTaxonsRequest {
+	string shopID = 1;
+}
+
+message RootTaxonsResponse {
+	TaxonsMessage message = 1;
+}
+
+message CreateTasonsRequest {
+	string shopID = 1;
+  TaxonsRecord record = 2;
+}
+
+message CreateTasonsResponse {
+	TaxonsRecord record = 1;
+}
+
+message CreateChildrenTaxonsRequest {
+	string shopID = 1;
+	string code = 2;
+
+	TaxonsRecord record = 3;
+}
+
+message CreateChildrenTaxonsResponse {
+	TaxonsRecord record = 1;
+}
+
+message UpdateTaxonsRequest {
+	string shopID = 1;
+	string code = 2;
+
+	TaxonsRecord record = 3;
+}
+
+message UpdateTaxonsResponse {
+	TaxonsRecord record = 1;
+}
+
+message DeleteTasonsRequest {
+	string shopID = 1;
+	string code = 2;
+}
+
+message DeleteTasonsResponse {
+}
+
+message Image {
+	string id = 1;
+	string code = 2;
+	string path = 3;
+}
+
+message TaxonsMessage {
+	string shopID = 1;
+	string code = 2;
+  string name = 3;
+	string description = 4;
+	int32 position = 5;
+
+  repeated Image images = 6;
+
+  repeated TaxonsMessage children = 7;
+}
+
+message StreamingRequest {
+	int64 count = 1;
+}
+
+message StreamingResponse {
+	int64 count = 1;
+}
+
+message Ping {
+	int64 stroke = 1;
+}
+
+message Pong {
+	int64 stroke = 1;
+}
+
+message Message {
+	string say = 1;
+}

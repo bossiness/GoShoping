@@ -2,7 +2,7 @@ package mongodb
 
 import (
 	"btdxcx.com/micro/taxons-srv/db"
-	proto "btdxcx.com/micro/taxons-srv/proto/imp"
+	proto "btdxcx.com/micro/taxons-srv/proto/taxons"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 )
@@ -13,8 +13,8 @@ type Mongo struct {
 }
 
 var (
-	// Url mongodb URL
-	Url = "localhost:27017"
+	// URL mongodb URL
+	URL = "localhost:27017"
 )
 
 const (
@@ -34,6 +34,7 @@ type Taxons struct {
 	ID          bson.ObjectId `bson:"_id,omitempty"`
 	Name        string        `bson:"name"`
 	Description string        `bson:"description"`
+	Position    int32         `bson:"position"`
 	Images      []mgo.DBRef   `bson:"images"`
 	Parent      string        `bson:"parent_id"`
 }
@@ -44,13 +45,20 @@ func init() {
 
 // Init 数据库初始化
 func (m *Mongo) Init() error {
-	session, err := mgo.Dial(Url)
+	session, err := mgo.Dial(URL)
 	if err != nil {
 		return err
 	}
 	session.SetMode(mgo.Monotonic, true)
 	m.session = session
 	return nil
+}
+
+// Deinit 资源释放
+func (m *Mongo) Deinit() {
+	if m.session != nil {
+		m.session.Close()
+	}
 }
 
 // Read 读取数据
@@ -64,7 +72,11 @@ func (m *Mongo) Read(dbname string) (*proto.TaxonsMessage, error) {
 
 func (m *Mongo) readRoot(c *mgo.Collection, ic *mgo.Collection) (*proto.TaxonsMessage, error) {
 
-	root := &proto.TaxonsMessage{Code: "root", Name: "root", Description: "root taxons"}
+	root := &proto.TaxonsMessage{
+		Code:        "root",
+		Name:        "root",
+		Description: "root taxons",
+	}
 
 	taxons, err := m.readRootTaxons(c)
 	if err != nil {
@@ -100,6 +112,7 @@ func taxons2message(t *Taxons, ic *mgo.Collection) *proto.TaxonsMessage {
 		Code:        t.ID.Hex(),
 		Name:        t.Name,
 		Description: t.Description,
+		Position:    t.Position,
 	}
 	for _, item := range t.Images {
 		image := new(Image)
@@ -120,7 +133,7 @@ func (m *Mongo) readRootTaxons(c *mgo.Collection) (*[]Taxons, error) {
 
 func (m *Mongo) readTaxons(c *mgo.Collection, parentID string) (*[]Taxons, error) {
 	result := []Taxons{}
-	err := c.Find(bson.M{"parent_id": parentID}).All(&result)
+	err := c.Find(bson.M{"parent_id": parentID}).Sort("position").All(&result)
 	if err != nil {
 		return nil, err
 	}
@@ -161,9 +174,26 @@ func (m *Mongo) Create(dbname string, data *proto.TaxonsMessage) (string, error)
 		imagesRef = append(imagesRef, mgo.DBRef{imageCollectionName, tid, dbname})
 	}
 
+	index := mgo.Index{
+		Key:        []string{"name"},
+		Unique:     true,
+		DropDups:   true,
+		Background: true,
+	}
+
+	if err := c.EnsureIndex(index); err != nil {
+		return "", err
+	}
+
 	_id := bson.NewObjectId()
-	err := c.Insert(&Taxons{_id, data.Name, data.Description, imagesRef, data.Code})
-	if err != nil {
+	if err := c.Insert(&Taxons{
+		ID:          _id,
+		Name:        data.Name,
+		Description: data.Description,
+		Position:    data.Position,
+		Images:      imagesRef,
+		Parent:      data.Code,
+	}); err != nil {
 		return "", err
 	}
 
@@ -185,7 +215,11 @@ func (m *Mongo) update(c *mgo.Collection, dbname string, data *proto.TaxonsMessa
 
 	selector := bson.M{"_id": bson.ObjectIdHex(data.Code)}
 
-	updataData := bson.M{"$set": bson.M{"name": data.Name, "description": data.Description}}
+	updataData := bson.M{"$set": bson.M{
+		"name":        data.Name,
+		"position":    data.Position,
+		"description": data.Description,
+	}}
 
 	err := c.Update(selector, updataData)
 	if err != nil {
