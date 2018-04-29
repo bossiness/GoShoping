@@ -1,29 +1,30 @@
 package shopapi
 
 import (
-	"btdxcx.com/os/wrapper"
-	"btdxcx.com/micro/shop-srv/wrapper/inspection/shop-key"
-	"btdxcx.com/micro/jwtauth-srv/wrapper"
-	"btdxcx.com/os/custom-error"
 	"net/http"
-	"github.com/micro/go-log"
-	"github.com/emicklei/go-restful"
-	"github.com/micro/go-micro/client"
 	"time"
-	"github.com/micro/go-web"
-	"github.com/micro/cli"
-	dproto "btdxcx.com/micro/shop-srv/proto/shop/details"
+
+	"btdxcx.com/micro/jwtauth-srv/wrapper"
 	kproto "btdxcx.com/micro/shop-srv/proto/shop"
+	dproto "btdxcx.com/micro/shop-srv/proto/shop/details"
+	"btdxcx.com/micro/shop-srv/wrapper/inspection/shop-key"
+	"btdxcx.com/os/custom-error"
+	"btdxcx.com/os/wrapper"
+	"github.com/emicklei/go-restful"
+	"github.com/micro/cli"
+	"github.com/micro/go-log"
+	"github.com/micro/go-micro/client"
+	"github.com/micro/go-web"
 )
 
 const (
-	srvShopName = "com.btdxcx.micro.srv.shop"
+	srvShopName    = "com.btdxcx.micro.srv.shop"
 	apiServiceName = "com.btdxcx.center.api.shops"
 )
 
 var (
 	detailsCl dproto.ShopClient
-	keyCl kproto.ShopKeyClient
+	keyCl     kproto.ShopKeyClient
 )
 
 // Commands add auth api command
@@ -53,7 +54,7 @@ func api(ctx *cli.Context) {
 	tokenWrapper := wrapper.NewClientWrapper("center")
 
 	detailsCl = dproto.NewShopClient(
-		srvShopName, 
+		srvShopName,
 		shopkeyWrapper(tokenWrapper(client.DefaultClient)),
 	)
 	keyCl = kproto.NewShopKeyClient(srvShopName, client.DefaultClient)
@@ -101,7 +102,7 @@ func (api *API) list(req *restful.Request, rsp *restful.Response) {
 		customerror.WriteError(err, rsp)
 		return
 	}
-	
+
 	rsp.WriteEntity(list)
 }
 
@@ -217,10 +218,10 @@ func updateState(req *restful.Request, rsp *restful.Response, state dproto.State
 	request := new(dproto.UpdateRequest)
 	request.ShopId = req.PathParameter("shopID")
 	request.State = state
-	
+
 	ctx := shopkey.NewNewContext(req.Request.Context(), req.HeaderParameter("X-SHOP-KEY"))
 	ctx = wrapper.NewContext(ctx, req.HeaderParameter("Authorization"))
-	
+
 	_, err := detailsCl.Update(ctx, request)
 	if err != nil {
 		customerror.WriteError(err, rsp)
