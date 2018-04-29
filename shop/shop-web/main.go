@@ -4,7 +4,7 @@ import (
 
 	"os"
 
-	"btdxcx.com/shop/web/image-web"
+	"btdxcx.com/shop/shop-web/image-web"
 
 	ccli "github.com/micro/cli"
 	"github.com/micro/go-micro/cmd"

@@ -12,9 +12,10 @@ type Config struct {
 }
 
 var conf Config
+var ConfPath = "image-web/config.json"
 
-func LoadConf(){
-	r, err := os.Open("image-web/config.json")
+func LoadConf() {
+	r, err := os.Open(ConfPath)
     if err != nil {
         log.Fatalln(err)
     }
@@ -23,4 +24,5 @@ func LoadConf(){
     if err != nil {
         log.Fatalln(err)
     }
+    log.Printf("Load Config : %s", ConfPath)
 }

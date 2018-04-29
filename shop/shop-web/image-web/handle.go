@@ -78,7 +78,7 @@ func DownloadHandler(w http.ResponseWriter, r *http.Request) {
 func HomeHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(
 		`<html><body>
-			<form id="upload-form" action="/image" method="post" enctype="multipart/form-data" >
+			<form id="upload-form" action="./image" method="post" enctype="multipart/form-data" >
 		　　　<input type="file" id="uploadfile" name="uploadfile" /> <br />
 		　　　<input type="submit" value="Upload" />
 			</form></body>

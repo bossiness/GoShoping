@@ -92,16 +92,16 @@ member_srv() {
 }
 
 api() {
-    subcmd=$1
-    shift
-    case $subcmd in
+  subcmd=$1
+  shift
+  case $subcmd in
 	center)
 	center
 	;;
 	merchant)
 	merchant
 	;;
-    applet)
+  applet)
 	applet
 	;;
 	*)
@@ -124,7 +124,7 @@ merchant() {
 		echo 'clean merchant api program.'
 		rm -fv ${GOPATH}/bin/merchant
 	fi
-    go install -x btdxcx.com/merchant
+  go install -x btdxcx.com/merchant
 }
 
 center() {
@@ -132,7 +132,16 @@ center() {
 		echo 'clean center api program.'
 		rm -fv ${GOPATH}/bin/center-api
 	fi
-    go install -x btdxcx.com/center/center-api
+  go install -x btdxcx.com/center/center-api
+}
+
+
+web () {
+	if [ -f "${GOPATH}/bin/shop-web" ] ; then
+		echo 'clean shop web program.'
+		rm -fv ${GOPATH}/bin/cshop-web
+	fi
+	go install -x btdxcx.com/shop/shop-web
 }
 
 case $cmd in
@@ -142,8 +151,11 @@ case $cmd in
 	api)
 	api $*
 	;;
+	web)
+	web
+	;;
 	*)
-	echo "$0 <srv|api> {subcmd}"
+	echo "$0 <srv|api|web> {subcmd}"
 	exit
 	;;
 esac
