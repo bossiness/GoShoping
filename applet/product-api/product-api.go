@@ -36,11 +36,6 @@ func Commands() []cli.Command {
 			Usage:  "Run product api",
 			Action: api,
 		},
-		{
-			Name:   "taxon-products",
-			Usage:  "Run product api",
-			Action: taxon,
-		},
 	}
 }
 
@@ -73,6 +68,7 @@ func api(ctx *cli.Context) {
 
 	ws.Route(ws.GET("").To(api.fetchProducts))
 	ws.Route(ws.GET("/{spu}").To(api.fetchProduct))
+	ws.Route(ws.GET("/taxon-products/{taxonCode}").To(api.taxonProducts))
 
 	wc.Add(ws)
 	service.Handle("/", wc)
@@ -121,6 +117,33 @@ func (api *API) fetchProduct(req *restful.Request, rsp *restful.Response) {
 	}
 
 	if err := rsp.WriteEntity(out.Record); err != nil {
+		rsp.WriteError(http.StatusInternalServerError, err)
+	}
+}
+
+func (api *API) taxonProducts(req *restful.Request, rsp *restful.Response) {
+	ctx := shopkey.NewNewContext(req.Request.Context(), req.HeaderParameter("X-SHOP-KEY"))
+
+	in := new(proto.TaxonProductsRequest)
+	offset, err1 := strconv.Atoi(req.QueryParameter("offset"))
+	if err1 != nil {
+		offset = 0
+	}
+	limit, err2 := strconv.Atoi(req.QueryParameter("limit"))
+	if err2 != nil {
+		limit = 20
+	}
+	in.Offset = int32(offset)
+	in.Limit = int32(limit)
+	in.TaxonCode = req.PathParameter("taxonCode")
+
+	out, err := productCl.TaxonProducts(ctx, in)
+	if err != nil {
+		customerror.WriteError(err, rsp)
+		return
+	}
+
+	if err := rsp.WriteEntity(out); err != nil {
 		rsp.WriteError(http.StatusInternalServerError, err)
 	}
 }

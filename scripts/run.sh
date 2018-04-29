@@ -218,19 +218,23 @@ applet_apis() {
   shift
   case $api in
 	  auth)
-    echo 'start applet auth api!'
 	  center-api --register_ttl=30 --register_interval=15 auth --api_service=com.btdxcx.applet.api.auth --site_type=mini 1>>${logpath}/api/applet/info.log 2>>${logpath}/api/applet/error.log &
-	  ;;
+	  echo 'start applet auth api!'
+		;;
 	  shop)
-    echo 'start applet shop apis!'
 	  applet --register_ttl=30 --register_interval=15 shop 1>>${logpath}/api/applet/info.log 2>>${logpath}/api/applet/error.log &
-	  ;;
+	  echo 'start applet shop apis!'
+		;;
 		taxons)
-		echo 'start applet taxons apis!'
 	  applet --register_ttl=30 --register_interval=15 taxons 1>>${logpath}/api/applet/info.log 2>>${logpath}/api/applet/error.log &
-	  ;;
+	  echo 'start applet taxons apis!'
+		;;
+		product)
+	  applet --register_ttl=30 --register_interval=15 product 1>>${logpath}/api/applet/info.log 2>>${logpath}/api/applet/error.log &
+	  echo 'start applet product apis!'
+		;;
 	  *)
-	  echo "run.sh start api applet <auth|shop|taxons>"
+	  echo "run.sh start api applet <auth|shop|taxons|product>"
 	  exit
 	  ;;
   esac
