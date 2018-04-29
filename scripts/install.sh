@@ -5,8 +5,8 @@ shift
 
 srv() {
 	subcmd=$1
-    shift
-    case $subcmd in
+  shift
+  case $subcmd in
 	account)
 	account_srv
 	;;

@@ -63,7 +63,7 @@ func api(ctx *cli.Context) {
 	ws.Filter(logwrapper.NCSACommonLogFormatLogger())
 	ws.Consumes(restful.MIME_XML, restful.MIME_JSON)
 	ws.Produces(restful.MIME_JSON, restful.MIME_XML)
-	ws.Path("/shop")
+	ws.Path("/shops")
 
 	ws.Route(ws.GET("/me").To(api.read))
 	ws.Route(ws.PUT("/me").To(api.update))
