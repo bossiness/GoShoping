@@ -135,6 +135,7 @@ type Product interface {
 	ReadProductOptions(dbname string, spu string) (*[]*proto.ProductRecord_OptionRecord, error)
 	UpdateProductOption(dbname string, spu string, record *proto.ProductOption) error
 	DeleteProductOption(dbname string, spu string, code string) error
+	EnableProduct(dbname string, spu string, enabled bool) error
 }
 
 // CreateProduct Insert
@@ -300,4 +301,9 @@ func UpdateProductOption(dbname string, spu string, record *proto.ProductOption)
 // DeleteProductOption Update
 func DeleteProductOption(dbname string, spu string, code string) error {
 	return db.DeleteProductOption(dbname, spu, code)
+}
+
+// EnableProduct Update
+func EnableProduct(dbname string, spu string, enabled bool) error {
+	return db.EnableProduct(dbname, spu, enabled)
 }

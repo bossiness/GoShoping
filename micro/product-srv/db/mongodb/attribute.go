@@ -17,6 +17,7 @@ const (
 type Attribute struct {
 	ID            bson.ObjectId `bson:"_id,omitempty"`
 	Code          string        `bson:"code"`
+	Name          string        `bson:"name"`
 	Type          string        `bson:"type"`
 	Configuration []string      `bson:"configuration,omitempty"`
 	UpdatedAt     int64         `bson:"updated_at,omitempty"`
@@ -41,6 +42,7 @@ func (m *Mongo) CreateAttribute(dbname string, record *proto.AttributesRecord) e
 	doc := &Attribute{
 		ID:            bson.NewObjectId(),
 		Code:          record.Code,
+		Name:          record.Name,
 		Type:          record.Type,
 		Configuration: record.Configuration,
 		UpdatedAt:     time.Now().Unix(),
@@ -64,6 +66,7 @@ func (m *Mongo) ReadAttributes(dbname string, offset int, limit int) (*[]*proto.
 		record := &proto.AttributesRecord{
 			Code:          item.Code,
 			Type:          item.Type,
+			Name:          item.Name,
 			Configuration: item.Configuration,
 			UpdatedAt:     item.UpdatedAt,
 			CreatedAt:     item.CreatedAt,
@@ -85,6 +88,7 @@ func (m *Mongo) ReadAttribute(dbname string, code string) (*proto.AttributesReco
 	record := proto.AttributesRecord{
 		Code:          result.Code,
 		Type:          result.Type,
+		Name:          result.Name,
 		Configuration: result.Configuration,
 		UpdatedAt:     result.UpdatedAt,
 		CreatedAt:     result.CreatedAt,
@@ -99,7 +103,7 @@ func (m *Mongo) UpdateAttribute(dbname string, code string, record *proto.Attrib
 
 	selector := bson.M{"code": code}
 	updataData := bson.M{"$set": bson.M{
-		"type":          record.Type,
+		// "type":          record.Type,
 		"configuration": record.Configuration,
 		"updated_at":    time.Now()}}
 

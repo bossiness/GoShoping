@@ -27,7 +27,7 @@ const (
 	tblKey       = "shop-key"
 	tblDetails   = "shop-details"
 	tblOwner     = "shop-owner"
-	tblMini      = "shop-mini"
+	tblWX        = "shop-wx"
 	tblPhysical  = "shop-physical"
 )
 
@@ -112,7 +112,7 @@ type ShopDetails struct {
 	Introduce string        `bson:"introduce"`
 
 	Owner    mgo.DBRef `bson:"owner"`
-	Mini     mgo.DBRef `bson:"mini"`
+	WeiXin   mgo.DBRef `bson:"weixin"`
 	Physical mgo.DBRef `bson:"physical"`
 }
 
@@ -124,10 +124,14 @@ type ShopOwner struct {
 	Phone    string        `bson:"phone"`
 }
 
-// MiniApp 小程序信息
-type MiniApp struct {
-	ID      bson.ObjectId `bson:"_id,omitempty"`
-	IDWecht string        `bson:"wechat_id"`
+// WeiXin 小程序信息
+type WeiXin struct {
+	ID         bson.ObjectId `bson:"_id,omitempty"`
+	WechatID   string        `bson:"wechat_id,omitempty"`
+	Appid      string        `bson:"appid,omitempty"`
+	AppSecret  string        `bson:"app_secret,omitempty"`
+	PartnerID  string        `bson:"partner_id,omitempty"`
+	PartnerKey string        `bson:"partner_key,omitempty"`
 }
 
 // PhysicalStore 实体店信息
@@ -151,7 +155,7 @@ type Location struct {
 func (m *Mongo) CreateDetails(req *dproto.CreateRequest) (*dproto.CreateResponse, error) {
 	c := m.session.DB(databaseName).C(tblDetails)
 	ownerC := m.session.DB(databaseName).C(tblOwner)
-	miniC := m.session.DB(databaseName).C(tblMini)
+	wxC := m.session.DB(databaseName).C(tblWX)
 	physicalC := m.session.DB(databaseName).C(tblPhysical)
 
 	ownerRef := mgo.DBRef{}
@@ -183,19 +187,23 @@ func (m *Mongo) CreateDetails(req *dproto.CreateRequest) (*dproto.CreateResponse
 		ownerRef.Database = databaseName
 	}
 
-	miniRef := mgo.DBRef{}
-	if req.Details.Mimi != nil {
-		miniID := bson.NewObjectId()
-		mini := &MiniApp{
-			ID:      miniID,
-			IDWecht: req.Details.Mimi.WechatId,
+	wxRef := mgo.DBRef{}
+	if req.Details.Weixin != nil {
+		id := bson.NewObjectId()
+		weixin := &WeiXin{
+			ID:         id,
+			WechatID:   req.Details.Weixin.WechatId,
+			Appid:      req.Details.Weixin.Appid,
+			AppSecret:  req.Details.Weixin.AppSecret,
+			PartnerID:  req.Details.Weixin.PartnerId,
+			PartnerKey: req.Details.Weixin.PartnerKey,
 		}
-		if err := miniC.Insert(mini); err != nil {
+		if err := wxC.Insert(weixin); err != nil {
 			return nil, err
 		}
-		miniRef.Collection = tblMini
-		miniRef.Id = miniID
-		miniRef.Database = databaseName
+		wxRef.Collection = tblWX
+		wxRef.Id = id
+		wxRef.Database = databaseName
 	}
 
 	physicalRef := mgo.DBRef{}
@@ -245,7 +253,7 @@ func (m *Mongo) CreateDetails(req *dproto.CreateRequest) (*dproto.CreateResponse
 		Logo:      req.Details.Logo,
 		Introduce: req.Details.Introduce,
 		Owner:     ownerRef,
-		Mini:      miniRef,
+		WeiXin:    wxRef,
 		Physical:  physicalRef,
 	}
 	if err := c.Insert(details); err != nil {
@@ -273,10 +281,10 @@ func (m *Mongo) readDetails(details *ShopDetails) (*dproto.ReadResponse, error) 
 		clOwner.FindId(details.Owner.Id).One(owner)
 	}
 
-	mini := &MiniApp{}
-	if details.Mini.Id != nil {
-		clMini := m.session.DB(details.Mini.Database).C(details.Mini.Collection)
-		clMini.FindId(details.Mini.Id).One(mini)
+	mini := &WeiXin{}
+	if details.WeiXin.Id != nil {
+		clMini := m.session.DB(details.WeiXin.Database).C(details.WeiXin.Collection)
+		clMini.FindId(details.WeiXin.Id).One(mini)
 	}
 
 	physical := &PhysicalStore{}
@@ -302,9 +310,13 @@ func (m *Mongo) readDetails(details *ShopDetails) (*dproto.ReadResponse, error) 
 				Nickname: owner.Nickname,
 				Phone:    owner.Phone,
 			},
-			Mimi: &dproto.ShopDetails_MiniApp{
-				Id:       mini.ID.Hex(),
-				WechatId: mini.IDWecht,
+			Weixin: &dproto.ShopDetails_WeiXin{
+				Id:         mini.ID.Hex(),
+				WechatId:   mini.WechatID,
+				Appid:      mini.Appid,
+				AppSecret:  mini.AppSecret,
+				PartnerId:  mini.PartnerID,
+				PartnerKey: mini.PartnerKey,
 			},
 			Physical: &dproto.ShopDetails_PhysicalStore{
 				Id:      physical.ID.Hex(),
@@ -337,8 +349,8 @@ func (m *Mongo) DeleteDetails(uuid string) error {
 		cl.RemoveId(details.Owner.Id)
 	}
 
-	if cl := m.session.DB(details.Mini.Database).C(details.Mini.Collection); cl != nil {
-		cl.RemoveId(details.Mini.Id)
+	if cl := m.session.DB(details.WeiXin.Database).C(details.WeiXin.Collection); cl != nil {
+		cl.RemoveId(details.WeiXin.Id)
 	}
 
 	if cl := m.session.DB(details.Physical.Database).C(details.Physical.Collection); cl != nil {
@@ -377,14 +389,18 @@ func (m *Mongo) UpdateDetails(req *dproto.UpdateRequest) error {
 				}
 			}
 		}
-		if req.Details.Mimi != nil {
-			mimi := req.Details.Mimi
-			if shop.Mini.Id != nil {
-				if c := m.session.DB(shop.Mini.Database).C(shop.Mini.Collection); c != nil {
+		if req.Details.Weixin != nil {
+			weixin := req.Details.Weixin
+			if shop.WeiXin.Id != nil {
+				if c := m.session.DB(shop.WeiXin.Database).C(shop.WeiXin.Collection); c != nil {
 					updataData := bson.M{"$set": bson.M{
-						"wechat_id": mimi.WechatId,
+						"wechat_id":   weixin.WechatId,
+						"appid":       weixin.Appid,
+						"app_secret":  weixin.AppSecret,
+						"partner_id":  weixin.PartnerId,
+						"partner_key": weixin.PartnerKey,
 					}}
-					c.UpdateId(shop.Mini.Id, updataData)
+					c.UpdateId(shop.WeiXin.Id, updataData)
 				}
 			}
 		}
@@ -429,7 +445,7 @@ func (m *Mongo) UpdateDetails(req *dproto.UpdateRequest) error {
 		"state":     req.State,
 	}}
 	return c.Update(selector, updataData)
-	
+
 }
 
 // ListDetails list

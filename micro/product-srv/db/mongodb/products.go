@@ -29,6 +29,7 @@ type Product struct {
 	Images        []Product_Image       `bson:"images,omitempty"`
 	Attributes    []Product_Attribute   `bson:"attributes,omitempty"`
 	Options       []Product_Option      `bson:"options,omitempty"`
+	Enabled       bool                  `bson:"enabled,omitempty"`
 }
 
 type Product_Association struct {
@@ -206,6 +207,7 @@ func (m *Mongo) CreateProduct(dbname string, record *proto.ProductRecord) error 
 		Images:        images,
 		Attributes:    attributes,
 		Options:       options,
+		Enabled:       false,
 	}
 
 	return c.Insert(&doc)
@@ -392,7 +394,7 @@ func (m *Mongo) TaxonProducts(dbname string, taxonCode string, offset int, limit
 
 	selector := bson.M{"$or": []bson.M{
 		bson.M{"mainTaxon": taxonCode},
-		bson.M{"productTaxons":taxonCode}}}
+		bson.M{"productTaxons": taxonCode}}}
 	results := []Product{}
 	if err := c.Find(selector).Skip(offset).Limit(limit).All(&results); err != nil {
 		return nil, err
@@ -458,7 +460,7 @@ func (m *Mongo) ReadProductAttributes(dbname string, spu string) (*[]*proto.Prod
 			attributes = append(attributes, attribute)
 		}
 	}
-	
+
 	return &attributes, nil
 }
 
@@ -907,13 +909,13 @@ func (m *Mongo) UpdateProductVariant(dbname string, spu string, sku string, reco
 
 	selector := bson.M{"spu": spu, "sku": sku}
 	update := bson.M{"$set": bson.M{
-		"name": record.Name,
+		"name":             record.Name,
 		"pricings.current": record.Pricings.Current,
-		"tracked": record.Tracked,
+		"tracked":          record.Tracked,
 		"shippingCategory": record.ShippingCategory,
-		"optionValues": record.OptionValues,
-		"images": record.Images,
-		"updated_at": time.Now().Unix(),
+		"optionValues":     record.OptionValues,
+		"images":           record.Images,
+		"updated_at":       time.Now().Unix(),
 	}}
 
 	return vc.Update(selector, update)
@@ -925,7 +927,6 @@ func (m *Mongo) DeleteProductVariant(dbname string, spu string, sku string) erro
 	selector := bson.M{"spu": spu, "sku": sku}
 	return vc.Remove(selector)
 }
-
 
 // CreateProductOption Update
 func (m *Mongo) CreateProductOption(dbname string, spu string, record *proto.ProductOption) error {
@@ -973,7 +974,7 @@ func (m *Mongo) ReadProductOptions(dbname string, spu string) (*[]*proto.Product
 			options = append(options, option)
 		}
 	}
-	
+
 	return &options, nil
 }
 
@@ -1010,7 +1011,7 @@ func (m *Mongo) UpdateProductOption(dbname string, spu string, record *proto.Pro
 	return errors.New("没有找到 Code:" + record.Code)
 }
 
-// DeleteProductOption Update
+// DeleteProductOption Delete
 func (m *Mongo) DeleteProductOption(dbname string, spu string, code string) error {
 	c := m.session.DB(dbname).C(productsCollectionName)
 
@@ -1030,4 +1031,16 @@ func (m *Mongo) DeleteProductOption(dbname string, spu string, code string) erro
 	}
 
 	return errors.New("没有找到 Code:" + code)
+}
+
+// EnableProduct Update
+func (m *Mongo) EnableProduct(dbname string, spu string, enabled bool) error {
+	c := m.session.DB(dbname).C(productsCollectionName)
+
+	selector := bson.M{"spu": spu}
+	updataData := bson.M{"$set": bson.M{
+		"enabled":        enabled,
+		"updated_at":  time.Now()}}
+
+	return c.Update(selector, updataData)
 }

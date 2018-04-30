@@ -532,3 +532,17 @@ func (h *Handler) DeleteProductVariant(ctx context.Context, req *proto.DeletePro
 
 	return nil
 }
+
+// EnableProduct is a single request handler called via client.EnableProduct or the generated client code
+func (h *Handler) EnableProduct(ctx context.Context, req *proto.EnableProductRequest, rsp *proto.EnableProductResponse) error {
+	shopID, err1 := shopkey.GetShopIDFrom(ctx, req.ShopId)
+	if err1 != nil {
+		return err1
+	}
+
+	if err := db.EnableProduct(shopID, req.Spu, req.Enabled); err != nil {
+		return errors.NotFound(svrName + ".EnableProduct", err.Error())
+	}
+
+	return nil
+}

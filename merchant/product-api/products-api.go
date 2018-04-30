@@ -84,7 +84,9 @@ func apis(ctx *cli.Context) {
 	ws.Route(ws.GET("/{spu}/variants/{sku}").To(api.fetchProductVariant))
 	ws.Route(ws.PUT("/{spu}/variants/{sku}").To(api.updateProductVariant))
 	ws.Route(ws.DELETE("/{spu}/variants/{sku}").To(api.deleteProductVariant))
-
+	ws.Route(ws.PATCH("/{spu}/enabled").To(api.enabledProduct))
+	ws.Route(ws.PATCH("/{spu}/disenabled").To(api.disenabledProduct))
+	
 	wc.Add(ws)
 	service.Handle("/", wc)
 
@@ -645,6 +647,44 @@ func (api *API) deleteProductVariant(req *restful.Request, rsp *restful.Response
 	in.Sku = req.PathParameter("sku")
 
 	out, err := productCl.DeleteProductVariant(ctx, in)
+	if err != nil {
+		customerror.WriteError(err, rsp)
+		return
+	}
+
+	if err := rsp.WriteEntity(out); err != nil {
+		rsp.WriteError(http.StatusInternalServerError, err)
+	}
+}
+
+func (api *API) enabledProduct(req *restful.Request, rsp *restful.Response) {
+	ctx := shopkey.NewNewContext(req.Request.Context(), req.HeaderParameter("X-SHOP-KEY"))
+	ctx = jwrapper.NewContext(ctx, req.HeaderParameter("Authorization"))
+
+	in := new(proto.EnableProductRequest)
+	in.Spu = req.PathParameter("spu")
+	in.Enabled = true
+
+	out, err := productCl.EnableProduct(ctx, in)
+	if err != nil {
+		customerror.WriteError(err, rsp)
+		return
+	}
+
+	if err := rsp.WriteEntity(out); err != nil {
+		rsp.WriteError(http.StatusInternalServerError, err)
+	}
+}
+
+func (api *API) disenabledProduct(req *restful.Request, rsp *restful.Response) {
+	ctx := shopkey.NewNewContext(req.Request.Context(), req.HeaderParameter("X-SHOP-KEY"))
+	ctx = jwrapper.NewContext(ctx, req.HeaderParameter("Authorization"))
+
+	in := new(proto.EnableProductRequest)
+	in.Spu = req.PathParameter("spu")
+	in.Enabled = false
+
+	out, err := productCl.EnableProduct(ctx, in)
 	if err != nil {
 		customerror.WriteError(err, rsp)
 		return

@@ -61,10 +61,11 @@ message DeleteAttributeResponse {
 
 message AttributesRecord {
 	string code = 1;
-	string type = 2;
-	repeated string configuration = 3;
-	int64 updated_at = 4;
-	int64 created_at = 5;
+	string name = 2;
+	string type = 3;
+	repeated string configuration = 4;
+	int64 updated_at = 5;
+	int64 created_at = 6;
 }
 
 service Option {
@@ -127,9 +128,10 @@ message DeleteOptionResponse {
 
 message OptionRecord {
 	string code = 1;
-	repeated OptionValue options = 2;
-	int64 updated_at = 3;
-	int64 created_at = 4;
+	string name = 2;
+	repeated OptionValue options = 3;
+	int64 updated_at = 4;
+	int64 created_at = 5;
 
 	message OptionValue {
 		string value = 1;
@@ -182,6 +184,7 @@ service Product {
 	rpc UpdateProductVariant (UpdateProductVariantRequest) returns (UpdateProductVariantResponse) {}
 	rpc DeleteProductVariant (DeleteProductVariantRequest) returns (DeleteProductVariantResponse) {}
 
+	rpc EnableProduct (EnableProductRequest) returns (EnableProductResponse);
 }
 
 message CreateProductRequest {
@@ -265,11 +268,14 @@ message ProductRecord {
 	repeated VariantRecord variants = 13;
 	repeated ReviewsRecord reviews = 14;
 
+	bool enabled = 15;
+
 	message AttributesRecord {
 		string code = 1;
-		string type = 2;
-		repeated string configuration = 3;
-		string value = 4;
+		string name = 2;
+		string type = 3;
+		repeated string configuration = 4;
+		string value = 5;
 	}
 
 	message Association {
@@ -279,15 +285,15 @@ message ProductRecord {
 
 	message OptionRecord {
 		string code = 1;
-		repeated OptionValue options = 2;
-		string value = 3;
+		string name = 2;
+		repeated OptionValue options = 3;
+		string value = 4;
 		
 		message OptionValue {
 			string value = 1;
 			string description = 2;
 		}
 	}
-
 }
 
 message Image {
@@ -636,3 +642,12 @@ message DeleteProductVariantRequest {
 }
 
 message DeleteProductVariantResponse {}
+
+message EnableProductRequest {
+	string shop_id = 1;
+	string spu = 2;
+	bool enabled = 3;
+}
+
+message EnableProductResponse {
+}

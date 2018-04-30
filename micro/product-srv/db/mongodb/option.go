@@ -10,13 +10,14 @@ import (
 )
 
 const (
-	optionsCollectionName    = "options"
+	optionsCollectionName = "options"
 )
 
 // Option DB
 type Option struct {
 	ID        bson.ObjectId `bson:"_id,omitempty"`
 	Code      string        `bson:"code,omitempty"`
+	Name      string        `bson:"name,omitempty"`
 	Options   []OptionValue `bson:"options,omitempty"`
 	UpdatedAt int64         `bson:"updated_at,omitempty"`
 	CreatedAt int64         `bson:"created_at,omitempty"`
@@ -55,6 +56,7 @@ func (m *Mongo) CreateOption(dbname string, record *proto.OptionRecord) error {
 	doc := Option{
 		ID:        bson.NewObjectId(),
 		Code:      record.Code,
+		Name:      record.Name,
 		Options:   incs,
 		UpdatedAt: time.Now().Unix(),
 		CreatedAt: time.Now().Unix(),
@@ -85,6 +87,7 @@ func (m *Mongo) ReadOptions(dbname string, offset int, limit int) (*[]*proto.Opt
 		}
 		record := &proto.OptionRecord{
 			Code:      item.Code,
+			Name:      item.Name,
 			Options:   options,
 			UpdatedAt: item.UpdatedAt,
 			CreatedAt: item.CreatedAt,
@@ -114,6 +117,7 @@ func (m *Mongo) ReadOption(dbname string, code string) (*proto.OptionRecord, err
 	}
 	record := &proto.OptionRecord{
 		Code:      result.Code,
+		Name:      result.Name,
 		Options:   options,
 		UpdatedAt: result.UpdatedAt,
 		CreatedAt: result.CreatedAt,

@@ -23,9 +23,13 @@ message ShopDetails {
         string phone = 4;
     }
 
-    message MiniApp {
+    message WeiXin {
         string id = 1;
         string wechat_id = 2;
+        string appid = 3;
+        string app_secret = 4;
+        string partner_id = 5;
+        string partner_key = 6;
     }
 
     message PhysicalStore {
@@ -45,7 +49,7 @@ message ShopDetails {
     }
 
     ShopOwner owner = 4;
-    MiniApp mimi = 5;
+    WeiXin weixin = 5;
     PhysicalStore physical = 6;
 }
 
