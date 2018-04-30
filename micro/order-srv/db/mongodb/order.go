@@ -3,18 +3,20 @@ package mongodb
 import (
 	proto "btdxcx.com/micro/order-srv/proto/order"
 	"gopkg.in/mgo.v2/bson"
+
+	customerDB "btdxcx.com/micro/member-srv/db/mongodb"
 )
 
 const (
-	ordersCollectionName = "orders"
-	customersCollectionName = "customers"
+	ordersCollectionName     = "orders"
+	customersCollectionName  = "customers"
 	orderItemsCollectionName = "orderItems"
 )
 
 // Order DB
 type Order struct {
-	ID   bson.ObjectId `bson:"_id,omitempty"`
-	UUID string        `bson:"uuid,omitempty"`
+	ID bson.ObjectId `bson:"_id,omitempty"`
+	// UUID string        `bson:"uuid,omitempty"`
 	// Items              []OrderItem       `bson:"items,omitempty"`
 	ItemsTotal         int64         `bson:"itemsTotal,omitempty"`
 	Adjustments        []string      `bson:"adjustments,omitempty"`
@@ -35,7 +37,7 @@ type Order struct {
 // OrderItem DB
 type OrderItem struct {
 	ID               bson.ObjectId `bson:"_id,omitempty"`
-	OrderID          string        `bson:"order_id,omitempty"`
+	OrderID          bson.ObjectId `bson:"order_id,omitempty"`
 	Quantity         int64         `bson:"quantity,omitempty"`
 	UnitPrice        int64         `bson:"unitPrice,omitempty"`
 	Total            int64         `bson:"total,omitempty"`
@@ -55,18 +57,6 @@ type Address struct {
 	Postcode  string `bson:"postcode,omitempty"`
 	Street    string `bson:"street,omitempty"`
 	Country   string `bson:"country,omitempty"`
-}
-
-// Customer DB
-type Customer struct {
-	ID        string `bson:"_id,omitempty"`
-	Username  string `bson:"username,omitempty"`
-	FirstName string `bson:"firstName,omitempty"`
-	LastName  string `bson:"lastName,omitempty"`
-	Phone     string `bson:"phone,omitempty"`
-	Email     string `bson:"email,omitempty"`
-	Portrait  string `bson:"portrait,omitempty"`
-	Role      string `bson:"role,omitempty"`
 }
 
 // OrderAdjustment DB
@@ -91,21 +81,180 @@ type OrderPayment struct {
 }
 
 // CreateOrder create order
-func (m *Mongo) CreateOrder(dbname string, customer string) error {
-	return nil
+func (m *Mongo) CreateOrder(dbname string, customer string) (string, error) {
+	c := m.session.DB(dbname).C(ordersCollectionName)
+	cc := m.session.DB(dbname).C(customersCollectionName)
+
+	resultCustomer := customerDB.Customer{}
+	if err := cc.Find(bson.M{"username": customer}).One(&resultCustomer); err != nil {
+		return "", err
+	}
+
+	doc := &Order{
+		ID:               bson.NewObjectId(),
+		Customer:         customer,
+		Total:            0,
+		AdjustmentsTotal: 0,
+		ItemsTotal:       0,
+		State:            "cart",
+		CheckoutState:    "cart",
+	}
+	if err := c.Insert(doc); err != nil {
+		return "", err
+	}
+
+	return doc.ID.Hex(), nil
 }
 
 // ReadOrders read orders
-func (m *Mongo) ReadOrders(dbname string, offset int, limst int) (*[]*proto.OrderRecord, error) {
+func (m *Mongo) ReadOrders(dbname string, state string, checkoutState string, offset int, limit int) (*[]*proto.OrderRecord, error) {
+	c := m.session.DB(dbname).C(ordersCollectionName)
+
+	results := []Order{}
+	query := bson.M{}
+	if len(state) != 0 && len(checkoutState) != 0 {
+		query = bson.M{ "state": state, "checkoutState": checkoutState }
+	} else if len(state) != 0 {
+		query = bson.M{ "state": state }
+	} else if len(checkoutState) != 0 {
+		query = bson.M{ "checkoutState": checkoutState }
+	} else {
+		query = nil
+	}
+	if err := c.Find(query).Skip(offset).Limit(limit).All(&results); err != nil {
+		return nil, err
+	}
+
+	records := []*proto.OrderRecord{}
+	for _, order := range results {
+		records = append(records, m.mapOrder(dbname, &order))
+	}
+
 	return nil, nil
+}
+
+func (m *Mongo) mapOrder(dbname string, order *Order) *proto.OrderRecord {
+	return &proto.OrderRecord{
+		Uuid: order.ID.Hex(),
+		Items: m.readOrderItems(dbname, order.ID),
+		ItemsTotal: order.ItemsTotal,
+		Adjustments: m.readAdjustments(dbname, order.Adjustments),
+		AdjustmentsTotal: order.AdjustmentsTotal,
+		Total: order.Total,
+		ShippingAddress: m.readShippingAddress(dbname, order.ShippingAddress),
+		BillingAddress: m.readBillingAddress(dbname, order.BillingAddress),
+		Shipment: m.mapShipment(&order.Shipment),
+		Payment: m.mapPayment(&order.Payment),
+		Customer: m.readCustomer(dbname, order.Customer),
+		State: order.State,
+		CheckoutState: order.CheckoutState,
+		CheckoutCompleteAt: order.CheckoutCompleteAt,
+		CreatedAt: order.CreatedAt,
+		UpdatedAt: order.UpdatedAt,
+	}
+}
+
+func (m *Mongo) readCustomer(dbname string, username string) *proto.Customer {
+	cc := m.session.DB(dbname).C(customersCollectionName)
+
+	rc := customerDB.Customer{}
+	if err := cc.Find(bson.M{"username": username}).One(&rc); err != nil {
+		return nil
+	}
+
+	return &proto.Customer{
+		Username:  rc.Username,
+		FirstName: rc.FirstName,
+		LastName:  rc.LastName,
+		Phone:     rc.Phone,
+		Email:     rc.Email,
+		Portrait:  rc.Portrait,
+	}
+}
+
+func (m *Mongo) readOrderItems(dbname string, orderID bson.ObjectId) []*proto.OrderRecord_Item {
+	c := m.session.DB(dbname).C(orderItemsCollectionName)
+
+	items := []OrderItem{}
+	recordItems := []*proto.OrderRecord_Item{}
+	if err := c.Find(bson.M{"order_id": orderID}).All(&items); err != nil {
+		return recordItems
+	}
+	for _, item := range items {
+		oi := proto.OrderRecord_Item{
+			Uuid: item.OrderID.Hex(),
+			Quantity: item.Quantity,
+			UnitPrice: item.UnitPrice,
+			Total: item.Total,
+			Adjustments: m.readAdjustments(dbname, item.Adjustments),
+			AdjustmentsTotal: item.AdjustmentsTotal,
+			Variant: item.Variant,
+		}
+		recordItems = append(recordItems, &oi)
+	}
+	return recordItems
+}
+
+func (m *Mongo) readAdjustments(dbname string, adjustments []string) []*proto.OrderRecord_Adjustment {
+	return []*proto.OrderRecord_Adjustment{}
+}
+
+func (m *Mongo) readShippingAddress(dbname string, address string) *proto.Address {
+	return nil
+}
+
+func (m *Mongo) readBillingAddress(dbname string, address string) *proto.Address {
+	return nil
+}
+
+func (m *Mongo) mapShipment(os *OrderShipment) *proto.OrderRecord_Shipment {
+	return nil
+}
+
+func (m *Mongo) mapPayment(os *OrderPayment) *proto.OrderRecord_Payment {
+	return nil
 }
 
 // ReadOrder read order
 func (m *Mongo) ReadOrder(dbname string, uuid string) (*proto.OrderRecord, error) {
-	return nil, nil
+	c := m.session.DB(dbname).C(ordersCollectionName)
+
+	result := Order{}
+	if err := c.FindId(bson.ObjectIdHex(uuid)).One(&result); err != nil {
+		return nil, err
+	}
+	return m.mapOrder(dbname, &result), nil
 }
 
 // DeleteOrder delete order
 func (m *Mongo) DeleteOrder(dbname string, uuid string) error {
-	return nil
+	c := m.session.DB(dbname).C(ordersCollectionName)
+
+	result := Order{}
+	if err := c.FindId(bson.ObjectIdHex(uuid)).One(&result); err != nil {
+		return err
+	}
+
+	ic := m.session.DB(dbname).C(orderItemsCollectionName)
+	ic.RemoveAll(bson.M{"order_id": result.ID})
+
+	return c.RemoveId(bson.ObjectIdHex(uuid))
+}
+
+// ReadCustomerOrders delete order
+func (m *Mongo) ReadCustomerOrders(dbname string, customer string) (*[]*proto.OrderRecord, error) {
+	c := m.session.DB(dbname).C(ordersCollectionName)
+
+	results := []Order{}
+	query := bson.M{"customer": customer}
+	if err := c.Find(query).All(&results); err != nil {
+		return nil, err
+	}
+
+	records := []*proto.OrderRecord{}
+	for _, order := range results {
+		records = append(records, m.mapOrder(dbname, &order))
+	}
+
+	return nil, nil
 }

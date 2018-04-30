@@ -1,8 +1,9 @@
 package handler
 
 import (
-	"btdxcx.com/micro/member-srv/db"
 	"context"
+
+	"btdxcx.com/micro/member-srv/db"
 	"btdxcx.com/micro/shop-srv/wrapper/inspection/shop-key"
 	"github.com/micro/go-micro/errors"
 
@@ -18,10 +19,10 @@ func (e *AdminUserHandler) CreateAdminUser(ctx context.Context, req *proto.Creat
 	if err1 != nil {
 		return err1
 	}
-	
+
 	err := db.CreateAdminUser(shopID, req.Record)
 	if err != nil {
-		return errors.InternalServerError(svrName + ".CreateAdminUser", err.Error())
+		return errors.InternalServerError(svrName+".CreateAdminUser", err.Error())
 	}
 
 	rsp.Record = req.Record
@@ -37,7 +38,7 @@ func (e *AdminUserHandler) ReadAdminUsers(ctx context.Context, req *proto.ReadAd
 
 	adminusers, err := db.ReadAdminUsers(shopID, int(req.Offset), int(req.Limit))
 	if err != nil {
-		return errors.NotFound(svrName + ".ReadAdminUsers", err.Error())
+		return errors.NotFound(svrName+".ReadAdminUsers", err.Error())
 	}
 
 	rsp.Limit = req.Limit
@@ -57,7 +58,7 @@ func (e *AdminUserHandler) ReadAdminUser(ctx context.Context, req *proto.ReadAdm
 
 	adminuser, err := db.ReadAdminUser(shopID, req.Id)
 	if err != nil {
-		return errors.NotFound(svrName + ".ReadAdminUser", err.Error())
+		return errors.NotFound(svrName+".ReadAdminUser", err.Error())
 	}
 
 	rsp.Record = adminuser
@@ -73,7 +74,7 @@ func (e *AdminUserHandler) ReadAdminUserFormName(ctx context.Context, req *proto
 
 	adminuser, err := db.ReadAdminUserFromName(shopID, req.Name)
 	if err != nil {
-		return errors.NotFound(svrName + ".ReadAdminUser", err.Error())
+		return errors.NotFound(svrName+".ReadAdminUser", err.Error())
 	}
 
 	rsp.Record = adminuser
@@ -89,7 +90,7 @@ func (e *AdminUserHandler) UpdateAdminUser(ctx context.Context, req *proto.Updat
 
 	err := db.UpdateAdminUser(shopID, req.Id, req.Record)
 	if err != nil {
-		return errors.NotFound(svrName + ".UpdateAdminUser", err.Error())
+		return errors.NotFound(svrName+".UpdateAdminUser", err.Error())
 	}
 
 	rsp.Record = req.Record
@@ -105,8 +106,8 @@ func (e *AdminUserHandler) DeleteAdminUser(ctx context.Context, req *proto.Delet
 
 	err := db.DeleteAdminUser(shopID, req.Id)
 	if err != nil {
-		return errors.NotFound(svrName + ".DeleteAdminUser", err.Error())
+		return errors.NotFound(svrName+".DeleteAdminUser", err.Error())
 	}
-	
+
 	return nil
 }

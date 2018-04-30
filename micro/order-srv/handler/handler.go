@@ -2,30 +2,90 @@ package handler
 
 import (
 	"context"
+	"btdxcx.com/micro/shop-srv/wrapper/inspection/shop-key"
+	"btdxcx.com/micro/order-srv/db"
+	"github.com/micro/go-micro/errors"
 
 	proto "btdxcx.com/micro/order-srv/proto/order"
+)
+
+const (
+	svrName = "com.btdxcx.micro.srv.order"
 )
 
 // Handler order
 type Handler struct{}
 
 // CreateCart is a single request handler called via client.CreateCart or the generated client code
-func (h *Handler) CreateCart(context.Context, *proto.CreateCartRequest, *proto.OrderResponse) error {
+func (h *Handler) CreateCart(ctx context.Context, req *proto.CreateCartRequest, rsp *proto.OrderResponse) error {
+	shopID, err1 := shopkey.GetShopIDFrom(ctx, req.ShopId)
+	if err1 != nil {
+		return err1
+	}
+
+	orderID, err := db.CreateOrder(shopID, req.Customer)
+	if err != nil {
+		return errors.InternalServerError(svrName + ".CreateCart", err.Error())
+	}
+	record, err1 := db.ReadOrder(shopID, orderID)
+	if err1 != nil {
+		return errors.InternalServerError(svrName + ".CreateCart", err1.Error())
+	}
+
+	rsp.Record = record
 	return nil
 }
 
 // ReadOrders is a single request handler called via client.ReadOrders or the generated client code
-func (h *Handler) ReadOrders(context.Context, *proto.ReadOrdersRequest, *proto.ReadOrdersResponse) error {
+func (h *Handler) ReadOrders(ctx context.Context, req *proto.ReadOrdersRequest, rsp *proto.ReadOrdersResponse) error {
+	shopID, err1 := shopkey.GetShopIDFrom(ctx, req.ShopId)
+	if err1 != nil {
+		return err1
+	}
+
+	orders, err := db.ReadOrders(shopID, req.State, req.CheckoutState, int(req.Offset), int(req.Limit))
+	if err != nil {
+		return errors.NotFound(svrName + ".ReadOrders", err.Error())
+	}
+
+	rsp.Limit = req.Limit
+	rsp.Offset = req.Offset
+	rsp.Total = int32(len(*orders))
+	rsp.Records = *orders
+
 	return nil
 }
 
 // ReadOrder is a single request handler called via client.ReadOrder or the generated client code
-func (h *Handler) ReadOrder(context.Context, *proto.ReadOrderRequest, *proto.OrderResponse) error {
+func (h *Handler) ReadOrder(ctx context.Context, req *proto.ReadOrderRequest, rsp *proto.OrderResponse) error {
+	shopID, err1 := shopkey.GetShopIDFrom(ctx, req.ShopId)
+	if err1 != nil {
+		return err1
+	}
+
+	product, err := db.ReadOrder(shopID, req.Uuid)
+	if err != nil {
+		return errors.NotFound(svrName + ".ReadOrder", err.Error())
+	}
+	rsp.Record = product
 	return nil
 }
 
 // DeleteOrder is a single request handler called via client.DeleteOrder or the generated client code
-func (h *Handler) DeleteOrder(context.Context, *proto.DeleteOrderRequest, *proto.Response) error {
+func (h *Handler) DeleteOrder(ctx context.Context, req *proto.DeleteOrderRequest, rsp *proto.Response) error {
+	shopID, err1 := shopkey.GetShopIDFrom(ctx, req.ShopId)
+	if err1 != nil {
+		return err1
+	}
+
+	if err := db.DeleteOrder(shopID, req.Uuid); err != nil {
+		return errors.NotFound(svrName + ".DeleteOrder", err.Error())
+	}
+	return nil
+}
+
+// ReadCustomerOrders is a single request handler called via client.ReadCustomerOrders or the generated client code
+func (h *Handler) ReadCustomerOrders(ctx context.Context, req *proto.ReadCustomerOrdersRequest, rsp *proto.ReadCustomerOrdersResponse) error {
 	return nil
 }
 

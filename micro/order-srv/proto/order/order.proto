@@ -8,6 +8,8 @@ service Order {
 	rpc ReadOrder (ReadOrderRequest) returns (OrderResponse);
 	rpc DeleteOrder (DeleteOrderRequest) returns (Response);
 
+	rpc ReadCustomerOrders (ReadCustomerOrdersRequest) returns (ReadCustomerOrdersResponse);
+
 	rpc CreateCartItem (CreateCartItemRequest) returns (CartItemResponse);
 	rpc UpdateCartItem (UpdateCartItemRequest) returns (CartItemResponse);
 	rpc DeleteCartItem (DeleteCartItemRequest) returns (Response);
@@ -36,7 +38,8 @@ message ReadOrdersRequest {
 	string shop_id = 1;
 	int32 offset = 2;
 	int32 limit = 3;
-	string checkoutState = 4;
+	string state = 4;
+	string checkoutState = 5;
 }
 
 message ReadOrdersResponse {
@@ -45,6 +48,15 @@ message ReadOrdersResponse {
 	int32 total = 3;
 
 	repeated OrderRecord records = 4;
+}
+
+message ReadCustomerOrdersRequest {
+	string shop_id = 1;
+	string customer = 2;
+}
+
+message ReadCustomerOrdersResponse {
+	repeated OrderRecord records = 1;
 }
 
 message ReadOrderRequest {

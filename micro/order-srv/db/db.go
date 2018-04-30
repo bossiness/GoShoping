@@ -32,20 +32,21 @@ func Deinit() {
 
 // Order is Order
 type Order interface {
-	CreateOrder(dbname string, customer string) error
-	ReadOrders(dbname string, offset int, limst int) (*[]*proto.OrderRecord, error)
+	CreateOrder(dbname string, customer string) (string, error)
+	ReadOrders(dbname string, state string, checkoutState string, offset int, limit int) (*[]*proto.OrderRecord, error)
 	ReadOrder(dbname string, uuid string) (*proto.OrderRecord, error)
 	DeleteOrder(dbname string, uuid string) error
+	ReadCustomerOrders(dbname string, customer string) (*[]*proto.OrderRecord, error)
 }
 
 // CreateOrder create order
-func CreateOrder(dbname string, customer string) error {
+func CreateOrder(dbname string, customer string) (string, error) {
 	return db.CreateOrder(dbname, customer)
 }
 
 // ReadOrders read orders
-func ReadOrders(dbname string, offset int, limst int) (*[]*proto.OrderRecord, error) {
-	return db.ReadOrders(dbname, offset, limst)
+func ReadOrders(dbname string, state string, checkoutState string, offset int, limit int) (*[]*proto.OrderRecord, error) {
+	return db.ReadOrders(dbname, state, checkoutState, offset, limit)
 }
 
 // ReadOrder read order
@@ -56,4 +57,18 @@ func ReadOrder(dbname string, uuid string) (*proto.OrderRecord, error) {
 // DeleteOrder delete order
 func DeleteOrder(dbname string, uuid string) error {
 	return db.DeleteOrder(dbname, uuid)
+}
+
+// ReadCustomerOrders delete order
+func ReadCustomerOrders(dbname string, customer string) (*[]*proto.OrderRecord, error) {
+	return db.ReadCustomerOrders(dbname, customer)
+}
+
+// OrderItem is Order
+type OrderItem interface {
+	CreateOrderItem(dbname string, order string) (string, error)
+	ReadOrders(dbname string, state string, checkoutState string, offset int, limit int) (*[]*proto.OrderRecord, error)
+	ReadOrder(dbname string, uuid string) (*proto.OrderRecord, error)
+	DeleteOrder(dbname string, uuid string) error
+	ReadCustomerOrders(dbname string, customer string) (*[]*proto.OrderRecord, error)
 }
