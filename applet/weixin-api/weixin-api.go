@@ -138,7 +138,7 @@ func (api *API) snsSignin(req *restful.Request, rsp *restful.Response) {
 
 	if _, err2 := customerCl.ReadCustomerFormName(ctx,
 		&customer.ReadCustomerFormNameRequest{
-			Name: appid,
+			Name: result.Openid,
 		},
 	); err2 != nil {
 		err := errors.Parse(err2.Error())
@@ -150,7 +150,7 @@ func (api *API) snsSignin(req *restful.Request, rsp *restful.Response) {
 		if _, err1 := customerCl.CreateCustomer(ctx,
 			&customer.CreateCustomerRequest{
 				Record: &customer.CustomerRecord{
-					Username: appid,
+					Username: result.Openid,
 					Superior: entity.Inviter,
 					LastName: entity.Nick,
 					Gender:   entity.Gender,
@@ -163,7 +163,7 @@ func (api *API) snsSignin(req *restful.Request, rsp *restful.Response) {
 	}
 
 	ain := &account.ReadRequest{
-		ClientId: appid,
+		ClientId: result.Openid,
 	}
 	if _, err3 := accountCl.Read(ctx, ain); err3 != nil {
 		err := errors.Parse(err3.Error())
@@ -181,8 +181,8 @@ func (api *API) snsSignin(req *restful.Request, rsp *restful.Response) {
 			Account: &account.Record{
 				Id: uid.String(),
 				Type: "mini",
-				ClientId: appid,
-				ClientSecret: appid,
+				ClientId: result.Openid,
+				ClientSecret: result.Openid,
 				Created: time.Now().Unix(),
 			}, 
 		}
@@ -193,8 +193,8 @@ func (api *API) snsSignin(req *restful.Request, rsp *restful.Response) {
 	}
 
 	jin := &jwtauth.TokenRequest{
-		ClientId: appid,
-		ClientSecrent: appid,
+		ClientId: result.Openid,
+		ClientSecrent: result.Openid,
 		Scopes: []string{ "mini" },
 	}
 	token, err4 := jwtauthCl.Token(ctx, jin)
