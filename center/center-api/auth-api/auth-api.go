@@ -122,7 +122,7 @@ func (api *API) signin(req *restful.Request, rsp *restful.Response) {
 	}
 
 	if request.Username != account.Account.ClientSecret {
-		err := errors.BadRequest("signout", "token mistake")
+		err := errors.BadRequest("signin", "token mistake")
 		rsp.WriteError(http.StatusBadRequest, err)
 		return
 	}

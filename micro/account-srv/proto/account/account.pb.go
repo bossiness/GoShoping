@@ -256,8 +256,8 @@ type SearchRequest struct {
 	ShopId   string `protobuf:"bytes,1,opt,name=shop_id,json=shopId" json:"shop_id,omitempty"`
 	ClientId string `protobuf:"bytes,2,opt,name=client_id,json=clientId" json:"client_id,omitempty"`
 	Type     string `protobuf:"bytes,3,opt,name=type" json:"type,omitempty"`
-	Limit    int64  `protobuf:"varint,4,opt,name=limit" json:"limit,omitempty"`
-	Offset   int64  `protobuf:"varint,5,opt,name=offset" json:"offset,omitempty"`
+	Limit    int64  `protobuf:"varint,4,opt,name=limit" json:"limit"`
+	Offset   int64  `protobuf:"varint,5,opt,name=offset" json:"offset"`
 }
 
 func (m *SearchRequest) Reset()                    { *m = SearchRequest{} }

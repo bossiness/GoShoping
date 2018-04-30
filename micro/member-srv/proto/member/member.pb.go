@@ -94,8 +94,8 @@ func (m *CustomerResponse) GetRecord() *CustomerRecord {
 
 type ReadCustomersRequest struct {
 	ShopId string `protobuf:"bytes,1,opt,name=shop_id,json=shopId" json:"shop_id,omitempty"`
-	Offset int32  `protobuf:"varint,2,opt,name=offset" json:"offset,omitempty"`
-	Limit  int32  `protobuf:"varint,3,opt,name=limit" json:"limit,omitempty"`
+	Offset int32  `protobuf:"varint,2,opt,name=offset" json:"offset"`
+	Limit  int32  `protobuf:"varint,3,opt,name=limit" json:"limit"`
 }
 
 func (m *ReadCustomersRequest) Reset()                    { *m = ReadCustomersRequest{} }
@@ -125,9 +125,9 @@ func (m *ReadCustomersRequest) GetLimit() int32 {
 }
 
 type ReadCustomersResponse struct {
-	Offset  int32             `protobuf:"varint,1,opt,name=offset" json:"offset,omitempty"`
-	Limit   int32             `protobuf:"varint,2,opt,name=limit" json:"limit,omitempty"`
-	Total   int32             `protobuf:"varint,3,opt,name=total" json:"total,omitempty"`
+	Offset  int32             `protobuf:"varint,1,opt,name=offset" json:"offset"`
+	Limit   int32             `protobuf:"varint,2,opt,name=limit" json:"limit"`
+	Total   int32             `protobuf:"varint,3,opt,name=total" json:"total"`
 	Records []*CustomerRecord `protobuf:"bytes,4,rep,name=records" json:"records,omitempty"`
 }
 
@@ -462,8 +462,8 @@ func (m *AdminUserResponse) GetRecord() *AdminUserRecord {
 
 type ReadAdminUsersRequest struct {
 	ShopId string `protobuf:"bytes,1,opt,name=shop_id,json=shopId" json:"shop_id,omitempty"`
-	Offset int32  `protobuf:"varint,2,opt,name=offset" json:"offset,omitempty"`
-	Limit  int32  `protobuf:"varint,3,opt,name=limit" json:"limit,omitempty"`
+	Offset int32  `protobuf:"varint,2,opt,name=offset" json:"offset"`
+	Limit  int32  `protobuf:"varint,3,opt,name=limit" json:"limit"`
 }
 
 func (m *ReadAdminUsersRequest) Reset()                    { *m = ReadAdminUsersRequest{} }
@@ -493,9 +493,9 @@ func (m *ReadAdminUsersRequest) GetLimit() int32 {
 }
 
 type ReadAdminUsersResponse struct {
-	Offset  int32              `protobuf:"varint,1,opt,name=offset" json:"offset,omitempty"`
-	Limit   int32              `protobuf:"varint,2,opt,name=limit" json:"limit,omitempty"`
-	Total   int32              `protobuf:"varint,3,opt,name=total" json:"total,omitempty"`
+	Offset  int32              `protobuf:"varint,1,opt,name=offset" json:"offset"`
+	Limit   int32              `protobuf:"varint,2,opt,name=limit" json:"limit"`
+	Total   int32              `protobuf:"varint,3,opt,name=total" json:"total"`
 	Records []*AdminUserRecord `protobuf:"bytes,4,rep,name=records" json:"records,omitempty"`
 }
 

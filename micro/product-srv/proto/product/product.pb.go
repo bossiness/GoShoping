@@ -207,9 +207,9 @@ func (m *ReadAttributesRequest) GetLimit() int32 {
 }
 
 type ReadAttributesResponse struct {
-	Offset  int32               `protobuf:"varint,1,opt,name=offset" json:"offset,omitempty"`
-	Limit   int32               `protobuf:"varint,2,opt,name=limit" json:"limit,omitempty"`
-	Total   int32               `protobuf:"varint,3,opt,name=total" json:"total,omitempty"`
+	Offset  int32               `protobuf:"varint,1,opt,name=offset" json:"offset"`
+	Limit   int32               `protobuf:"varint,2,opt,name=limit" json:"limit"`
+	Total   int32               `protobuf:"varint,3,opt,name=total" json:"total"`
 	Records []*AttributesRecord `protobuf:"bytes,4,rep,name=records" json:"records,omitempty"`
 }
 
@@ -487,9 +487,9 @@ func (m *ReadOptionsRequest) GetLimit() int32 {
 }
 
 type ReadOptionsResponse struct {
-	Offset  int32           `protobuf:"varint,1,opt,name=offset" json:"offset,omitempty"`
-	Limit   int32           `protobuf:"varint,2,opt,name=limit" json:"limit,omitempty"`
-	Total   int32           `protobuf:"varint,3,opt,name=total" json:"total,omitempty"`
+	Offset  int32           `protobuf:"varint,1,opt,name=offset" json:"offset"`
+	Limit   int32           `protobuf:"varint,2,opt,name=limit" json:"limit"`
+	Total   int32           `protobuf:"varint,3,opt,name=total" json:"total"`
 	Records []*OptionRecord `protobuf:"bytes,4,rep,name=records" json:"records,omitempty"`
 }
 
@@ -791,9 +791,9 @@ func (m *ReadProductsRequest) GetLimit() int32 {
 }
 
 type ReadProductsResponse struct {
-	Offset  int32            `protobuf:"varint,1,opt,name=offset" json:"offset,omitempty"`
-	Limit   int32            `protobuf:"varint,2,opt,name=limit" json:"limit,omitempty"`
-	Total   int32            `protobuf:"varint,3,opt,name=total" json:"total,omitempty"`
+	Offset  int32            `protobuf:"varint,1,opt,name=offset" json:"offset"`
+	Limit   int32            `protobuf:"varint,2,opt,name=limit" json:"limit"`
+	Total   int32            `protobuf:"varint,3,opt,name=total" json:"total"`
 	Records []*ProductRecord `protobuf:"bytes,4,rep,name=records" json:"records,omitempty"`
 }
 
@@ -871,9 +871,9 @@ func (m *TaxonProductsRequest) GetTaxonCode() string {
 }
 
 type TaxonProductsResponse struct {
-	Offset  int32            `protobuf:"varint,1,opt,name=offset" json:"offset,omitempty"`
-	Limit   int32            `protobuf:"varint,2,opt,name=limit" json:"limit,omitempty"`
-	Total   int32            `protobuf:"varint,3,opt,name=total" json:"total,omitempty"`
+	Offset  int32            `protobuf:"varint,1,opt,name=offset" json:"offset"`
+	Limit   int32            `protobuf:"varint,2,opt,name=limit" json:"limit"`
+	Total   int32            `protobuf:"varint,3,opt,name=total" json:"total"`
 	Records []*ProductRecord `protobuf:"bytes,4,rep,name=records" json:"records,omitempty"`
 }
 
@@ -2283,9 +2283,9 @@ func (m *ReadProductReviewsRequest) GetLimit() int32 {
 }
 
 type ReadProductReviewsResponse struct {
-	Offset  int32            `protobuf:"varint,1,opt,name=offset" json:"offset,omitempty"`
-	Limit   int32            `protobuf:"varint,2,opt,name=limit" json:"limit,omitempty"`
-	Total   int32            `protobuf:"varint,3,opt,name=total" json:"total,omitempty"`
+	Offset  int32            `protobuf:"varint,1,opt,name=offset" json:"offset"`
+	Limit   int32            `protobuf:"varint,2,opt,name=limit" json:"limit"`
+	Total   int32            `protobuf:"varint,3,opt,name=total" json:"total"`
 	Records []*ReviewsRecord `protobuf:"bytes,4,rep,name=records" json:"records,omitempty"`
 }
 

@@ -233,8 +233,12 @@ applet_apis() {
 	  applet --register_ttl=30 --register_interval=15 product 1>>${logpath}/api/applet/info.log 2>>${logpath}/api/applet/error.log &
 	  echo 'start applet product apis!'
 		;;
+		weixin)
+	  applet --register_ttl=30 --register_interval=15 weixin 1>>${logpath}/api/applet/info.log 2>>${logpath}/api/applet/error.log &
+	  echo 'start applet weixin apis!'
+		;;
 	  *)
-	  echo "run.sh start api applet <auth|shop|taxons|product>"
+	  echo "run.sh start api applet <auth|shop|taxons|product|weixin>"
 	  exit
 	  ;;
   esac

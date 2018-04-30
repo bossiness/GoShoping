@@ -37,7 +37,7 @@ func (e *CustomerHandler) ReadCustomers(ctx context.Context, req *proto.ReadCust
 
 	customers, err := db.ReadCustomers(shopID, int(req.Offset), int(req.Limit))
 	if err != nil {
-		return errors.BadRequest(svrName + ".ReadCustomers", err.Error())
+		return errors.NotFound(svrName + ".ReadCustomers", err.Error())
 	}
 
 	rsp.Limit = req.Limit
@@ -57,7 +57,7 @@ func (e *CustomerHandler) ReadCustomer(ctx context.Context, req *proto.ReadCusto
 
 	customer, err := db.ReadCustomer(shopID, req.Id)
 	if err != nil {
-		return errors.BadRequest(svrName + ".ReadCustomer", err.Error())
+		return errors.NotFound(svrName + ".ReadCustomer", err.Error())
 	}
 
 	rsp.Record = customer
@@ -73,7 +73,7 @@ func (e *CustomerHandler) ReadCustomerFormName(ctx context.Context, req *proto.R
 
 	customer, err := db.ReadCustomerFromName(shopID, req.Name)
 	if err != nil {
-		return errors.BadRequest(svrName + ".ReadCustomer", err.Error())
+		return errors.NotFound(svrName + ".ReadCustomer", err.Error())
 	}
 
 	rsp.Record = customer
@@ -89,7 +89,7 @@ func (e *CustomerHandler) UpdateCustomer(ctx context.Context, req *proto.UpdateC
 
 	err := db.UpdateCustomer(shopID, req.Id, req.Record)
 	if err != nil {
-		return errors.BadRequest(svrName + ".UpdateCustomer", err.Error())
+		return errors.NotFound(svrName + ".UpdateCustomer", err.Error())
 	}
 
 	rsp.Record = req.Record
@@ -105,7 +105,7 @@ func (e *CustomerHandler) DeleteCustomer(ctx context.Context, req *proto.DeleteC
 
 	err := db.DeleteCustomer(shopID, req.Id)
 	if err != nil {
-		return errors.BadRequest(svrName + ".DeleteCustomer", err.Error())
+		return errors.NotFound(svrName + ".DeleteCustomer", err.Error())
 	}
 	
 	return nil

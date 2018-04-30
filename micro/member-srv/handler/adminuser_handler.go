@@ -37,7 +37,7 @@ func (e *AdminUserHandler) ReadAdminUsers(ctx context.Context, req *proto.ReadAd
 
 	adminusers, err := db.ReadAdminUsers(shopID, int(req.Offset), int(req.Limit))
 	if err != nil {
-		return errors.BadRequest(svrName + ".ReadAdminUsers", err.Error())
+		return errors.NotFound(svrName + ".ReadAdminUsers", err.Error())
 	}
 
 	rsp.Limit = req.Limit
@@ -57,7 +57,7 @@ func (e *AdminUserHandler) ReadAdminUser(ctx context.Context, req *proto.ReadAdm
 
 	adminuser, err := db.ReadAdminUser(shopID, req.Id)
 	if err != nil {
-		return errors.BadRequest(svrName + ".ReadAdminUser", err.Error())
+		return errors.NotFound(svrName + ".ReadAdminUser", err.Error())
 	}
 
 	rsp.Record = adminuser
@@ -73,7 +73,7 @@ func (e *AdminUserHandler) ReadAdminUserFormName(ctx context.Context, req *proto
 
 	adminuser, err := db.ReadAdminUserFromName(shopID, req.Name)
 	if err != nil {
-		return errors.BadRequest(svrName + ".ReadAdminUser", err.Error())
+		return errors.NotFound(svrName + ".ReadAdminUser", err.Error())
 	}
 
 	rsp.Record = adminuser
@@ -89,7 +89,7 @@ func (e *AdminUserHandler) UpdateAdminUser(ctx context.Context, req *proto.Updat
 
 	err := db.UpdateAdminUser(shopID, req.Id, req.Record)
 	if err != nil {
-		return errors.BadRequest(svrName + ".UpdateAdminUser", err.Error())
+		return errors.NotFound(svrName + ".UpdateAdminUser", err.Error())
 	}
 
 	rsp.Record = req.Record
@@ -105,7 +105,7 @@ func (e *AdminUserHandler) DeleteAdminUser(ctx context.Context, req *proto.Delet
 
 	err := db.DeleteAdminUser(shopID, req.Id)
 	if err != nil {
-		return errors.BadRequest(svrName + ".DeleteAdminUser", err.Error())
+		return errors.NotFound(svrName + ".DeleteAdminUser", err.Error())
 	}
 	
 	return nil

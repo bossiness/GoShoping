@@ -112,8 +112,8 @@ func (m *OrderResponse) GetRecord() *OrderRecord {
 
 type ReadOrdersRequest struct {
 	ShopId        string `protobuf:"bytes,1,opt,name=shop_id,json=shopId" json:"shop_id,omitempty"`
-	Offset        int32  `protobuf:"varint,2,opt,name=offset" json:"offset,omitempty"`
-	Limit         int32  `protobuf:"varint,3,opt,name=limit" json:"limit,omitempty"`
+	Offset        int32  `protobuf:"varint,2,opt,name=offset" json:"offset"`
+	Limit         int32  `protobuf:"varint,3,opt,name=limit" json:"limit"`
 	CheckoutState string `protobuf:"bytes,4,opt,name=checkoutState" json:"checkoutState,omitempty"`
 }
 
@@ -151,9 +151,9 @@ func (m *ReadOrdersRequest) GetCheckoutState() string {
 }
 
 type ReadOrdersResponse struct {
-	Offset  int32          `protobuf:"varint,1,opt,name=offset" json:"offset,omitempty"`
-	Limit   int32          `protobuf:"varint,2,opt,name=limit" json:"limit,omitempty"`
-	Total   int32          `protobuf:"varint,3,opt,name=total" json:"total,omitempty"`
+	Offset  int32          `protobuf:"varint,1,opt,name=offset" json:"offset"`
+	Limit   int32          `protobuf:"varint,2,opt,name=limit" json:"limit"`
+	Total   int32          `protobuf:"varint,3,opt,name=total" json:"total"`
 	Records []*OrderRecord `protobuf:"bytes,4,rep,name=records" json:"records,omitempty"`
 }
 
