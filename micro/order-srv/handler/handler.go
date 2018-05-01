@@ -52,7 +52,6 @@ func (h *Handler) ReadOrders(ctx context.Context, req *proto.ReadOrdersRequest, 
 	rsp.Offset = req.Offset
 	rsp.Total = int32(len(*orders))
 	rsp.Records = *orders
-
 	return nil
 }
 
@@ -93,7 +92,7 @@ func (h *Handler) ReadCustomerOrders(ctx context.Context, req *proto.ReadCustome
 
 	orders, err := db.ReadCustomerOrders(shopID, req.Customer)
 	if err != nil {
-		return errors.NotFound(svrName + ".ReadOrders", err.Error())
+		return errors.NotFound(svrName + ".ReadCustomerOrders", err.Error())
 	}
 
 	rsp.Records = *orders
@@ -101,17 +100,52 @@ func (h *Handler) ReadCustomerOrders(ctx context.Context, req *proto.ReadCustome
 }
 
 // CreateCartItem is a single request handler called via client.CreateCartItem or the generated client code
-func (h *Handler) CreateCartItem(context.Context, *proto.CreateCartItemRequest, *proto.CartItemResponse) error {
+func (h *Handler) CreateCartItem(ctx context.Context, req *proto.CreateCartItemRequest, rsp *proto.CartItemResponse) error {
+	shopID, err1 := shopkey.GetShopIDFrom(ctx, req.ShopId)
+	if err1 != nil {
+		return err1
+	}
+
+	item := &proto.OrderRecord_Item{
+		Quantity: req.Quantity,
+		Variant: req.Variant,
+	}
+	id, err := db.CreateOrderItem(shopID, req.CartId, item)
+	if err != nil {
+		return errors.NotFound(svrName + ".CreateCartItem", err.Error())
+	}
+
+	rsp.Item = item
+	rsp.Item.Uuid = id
 	return nil
 }
 
 // UpdateCartItem is a single request handler called via client.UpdateCartItem or the generated client code
-func (h *Handler) UpdateCartItem(context.Context, *proto.UpdateCartItemRequest, *proto.CartItemResponse) error {
+func (h *Handler) UpdateCartItem(ctx context.Context, req *proto.UpdateCartItemRequest, rsp *proto.CartItemResponse) error {
+	shopID, err1 := shopkey.GetShopIDFrom(ctx, req.ShopId)
+	if err1 != nil {
+		return err1
+	}
+
+	item := &proto.OrderRecord_Item{
+		Quantity: req.Quantity,
+	}
+	if err := db.UpdateOrderItem(shopID, req.CartItemId, item); err != nil {
+		return errors.NotFound(svrName + ".UpdateCartItem", err.Error())
+	}
 	return nil
 }
 
 // DeleteCartItem is a single request handler called via client.DeleteCartItem or the generated client code
-func (h *Handler) DeleteCartItem(context.Context, *proto.DeleteCartItemRequest, *proto.Response) error {
+func (h *Handler) DeleteCartItem(ctx context.Context, req *proto.DeleteCartItemRequest, rsp *proto.Response) error {
+	shopID, err1 := shopkey.GetShopIDFrom(ctx, req.ShopId)
+	if err1 != nil {
+		return err1
+	}
+
+	if err := db.DeleteOrderItem(shopID, req.CartItemId); err != nil {
+		return errors.NotFound(svrName + ".DeleteOrder", err.Error())
+	}
 	return nil
 }
 

@@ -24,7 +24,7 @@ func (h *Handler) CreateProduct(ctx context.Context, req *proto.CreateProductReq
 	}
 
 	err := db.CreateProduct(shopID, req.Record)
-	if err1 != nil {
+	if err != nil {
 		return errors.Conflict(svrName + ".CreateProduct", err.Error())
 	}
 

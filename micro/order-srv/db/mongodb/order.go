@@ -34,20 +34,6 @@ type Order struct {
 	UpdatedAt          int64         `bson:"updated_at,omitempty"`
 }
 
-// OrderItem DB
-type OrderItem struct {
-	ID               bson.ObjectId `bson:"_id,omitempty"`
-	OrderID          bson.ObjectId `bson:"order_id,omitempty"`
-	Quantity         int64         `bson:"quantity,omitempty"`
-	UnitPrice        int64         `bson:"unitPrice,omitempty"`
-	Total            int64         `bson:"total,omitempty"`
-	Adjustments      []string      `bson:"adjustments,omitempty"`
-	AdjustmentsTotal int64         `bson:"adjustmentsTotal,omitempty"`
-	Variant          string        `bson:"variant,omitempty"`
-	CreatedAt        int64         `bson:"created_at,omitempty"`
-	UpdatedAt        int64         `bson:"updated_at,omitempty"`
-}
-
 // Address DB
 type Address struct {
 	ID        string `bson:"_id,omitempty"`
@@ -134,12 +120,13 @@ func (m *Mongo) ReadOrders(dbname string, state string, checkoutState string, of
 }
 
 func (m *Mongo) mapOrder(dbname string, order *Order) *proto.OrderRecord {
+	adjustmentsTotal, adjustments := m.readAdjustments(dbname, order.Adjustments)
 	return &proto.OrderRecord{
 		Uuid: order.ID.Hex(),
 		Items: m.readOrderItems(dbname, order.ID),
 		ItemsTotal: order.ItemsTotal,
-		Adjustments: m.readAdjustments(dbname, order.Adjustments),
-		AdjustmentsTotal: order.AdjustmentsTotal,
+		Adjustments: adjustments,
+		AdjustmentsTotal: adjustmentsTotal,
 		Total: order.Total,
 		ShippingAddress: m.readShippingAddress(dbname, order.ShippingAddress),
 		BillingAddress: m.readBillingAddress(dbname, order.BillingAddress),
@@ -181,13 +168,15 @@ func (m *Mongo) readOrderItems(dbname string, orderID bson.ObjectId) []*proto.Or
 		return recordItems
 	}
 	for _, item := range items {
+		adjustmentsTotal, adjustments := m.readAdjustments(dbname, item.Adjustments)
+		total := (item.Quantity * item.UnitPrice) + adjustmentsTotal
 		oi := proto.OrderRecord_Item{
 			Uuid: item.OrderID.Hex(),
 			Quantity: item.Quantity,
 			UnitPrice: item.UnitPrice,
-			Total: item.Total,
-			Adjustments: m.readAdjustments(dbname, item.Adjustments),
-			AdjustmentsTotal: item.AdjustmentsTotal,
+			Total: total,
+			Adjustments: adjustments,
+			AdjustmentsTotal: adjustmentsTotal,
 			Variant: item.Variant,
 		}
 		recordItems = append(recordItems, &oi)
@@ -195,8 +184,8 @@ func (m *Mongo) readOrderItems(dbname string, orderID bson.ObjectId) []*proto.Or
 	return recordItems
 }
 
-func (m *Mongo) readAdjustments(dbname string, adjustments []string) []*proto.OrderRecord_Adjustment {
-	return []*proto.OrderRecord_Adjustment{}
+func (m *Mongo) readAdjustments(dbname string, adjustments []string) (int64, []*proto.OrderRecord_Adjustment) {
+	return 0, []*proto.OrderRecord_Adjustment{}
 }
 
 func (m *Mongo) readShippingAddress(dbname string, address string) *proto.Address {

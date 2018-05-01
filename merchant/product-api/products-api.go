@@ -59,6 +59,7 @@ func apis(ctx *cli.Context) {
 	ws.Route(ws.GET("/{spu}").To(api.fetchProduct))
 	ws.Route(ws.PATCH("/{spu}").To(api.modifyProduct))
 	ws.Route(ws.PATCH("/{spu}/taxons").To(api.modifyTaxons))
+	ws.Route(ws.DELETE("/{spu}").To(api.deleteProduct))
 
 	ws.Route(ws.POST("/{spu}/attributes").To(api.createProductAttribute))
 	ws.Route(ws.PUT("/{spu}/attributes/{code}").To(api.updateProductAttribute))
@@ -187,6 +188,26 @@ func (api *API) modifyProduct(req *restful.Request, rsp *restful.Response) {
 	if err := rsp.WriteEntity(out.Record); err != nil {
 		rsp.WriteError(http.StatusInternalServerError, err)
 	}
+}
+
+func (api *API) deleteProduct(req *restful.Request, rsp *restful.Response) {
+	ctx := shopkey.NewNewContext(req.Request.Context(), req.HeaderParameter("X-SHOP-KEY"))
+	ctx = jwrapper.NewContext(ctx, req.HeaderParameter("Authorization"))
+
+	in := new(proto.DeleteProductRequest)
+	in.Spu = req.PathParameter("spu")
+
+	out, err := productCl.DeleteProduct(ctx, in)
+	if err != nil {
+		customerror.WriteError(err, rsp)
+		return
+	}
+
+	if err := rsp.WriteEntity(out); err != nil {
+		rsp.WriteError(http.StatusInternalServerError, err)
+	}
+
+	rsp.WriteHeader(http.StatusNoContent)
 }
 
 func (api *API) modifyTaxons(req *restful.Request, rsp *restful.Response) {

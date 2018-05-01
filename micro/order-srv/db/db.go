@@ -68,8 +68,8 @@ func ReadCustomerOrders(dbname string, customer string) (*[]*proto.OrderRecord, 
 // OrderItem is Order
 type OrderItem interface {
 	CreateOrderItem(dbname string, order string, item *proto.OrderRecord_Item) (string, error)
-	UpdateOrderItem(dbname string, order string, id string, item *proto.OrderRecord_Item) error
-	DeleteOrderItem(dbname string, order string, id string) error
+	UpdateOrderItem(dbname string, id string, item *proto.OrderRecord_Item) error
+	DeleteOrderItem(dbname string, id string) error
 }
 
 // CreateOrderItem create order item
@@ -78,11 +78,11 @@ func CreateOrderItem(dbname string, order string, item *proto.OrderRecord_Item) 
 }
 
 // UpdateOrderItem update order item
-func UpdateOrderItem(dbname string, order string, id string, item *proto.OrderRecord_Item) error {
-	return db.UpdateOrderItem(dbname, order, id, item)
+func UpdateOrderItem(dbname string, id string, item *proto.OrderRecord_Item) error {
+	return db.UpdateOrderItem(dbname, id, item)
 }
 
 // DeleteOrderItem delete order item
-func DeleteOrderItem(dbname string, order string, id string) error {
-	return db.DeleteOrderItem(dbname, order, id)
+func DeleteOrderItem(dbname string, id string) error {
+	return db.DeleteOrderItem(dbname, id)
 }
