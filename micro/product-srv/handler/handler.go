@@ -25,7 +25,7 @@ func (h *Handler) CreateProduct(ctx context.Context, req *proto.CreateProductReq
 
 	err := db.CreateProduct(shopID, req.Record)
 	if err1 != nil {
-		return errors.InternalServerError(svrName + ".CreateProduct", err.Error())
+		return errors.Conflict(svrName + ".CreateProduct", err.Error())
 	}
 
 	rsp.Record = req.Record

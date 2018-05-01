@@ -22,7 +22,7 @@ func (o *OptionHandler) CreateOption(ctx context.Context, req *proto.CreateOptio
 
 	err := db.CreateOption(shopID, req.Record)
 	if err1 != nil {
-		return errors.InternalServerError(svrName + ".CreateOption", err.Error())
+		return errors.Conflict(svrName + ".CreateOption", err.Error())
 	}
 
 	rsp.Record = req.Record

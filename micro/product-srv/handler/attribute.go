@@ -14,15 +14,14 @@ type AttributeHandler struct{}
 
 // CreateAttribute is a single request handler called via client.CreateAttribute or the generated client code
 func (a *AttributeHandler) CreateAttribute(ctx context.Context, req *proto.CreateAttributeRequest, rsp *proto.CreateAttributeResponse) error {
-
 	shopID, err1 := shopkey.GetShopIDFrom(ctx, req.ShopId)
 	if err1 != nil {
 		return err1
 	}
 
 	err2 := db.CreateAttribute(shopID, req.Record)
-	if err1 != nil {
-		return errors.InternalServerError(svrName + ".CreateAttribute", err2.Error())
+	if err2 != nil {
+		return errors.Conflict(svrName + ".CreateAttribute", err2.Error())
 	}
 
 	rsp.Record = req.Record
@@ -31,7 +30,6 @@ func (a *AttributeHandler) CreateAttribute(ctx context.Context, req *proto.Creat
 
 // ReadAttributes is a single request handler called via client.ReadAttributes or the generated client code
 func (a *AttributeHandler) ReadAttributes(ctx context.Context, req *proto.ReadAttributesRequest, rsp *proto.ReadAttributesResponse) error{
-	
 	shopID, err1 := shopkey.GetShopIDFrom(ctx, req.ShopId)
 	if err1 != nil {
 		return err1
@@ -52,7 +50,6 @@ func (a *AttributeHandler) ReadAttributes(ctx context.Context, req *proto.ReadAt
 
 // ReadAttribute is a single request handler called via client.ReadAttribute or the generated client code
 func (a *AttributeHandler) ReadAttribute(ctx context.Context, req *proto.ReadAttributeRequest, rsp *proto.ReadAttributeResponse) error{
-	
 	shopID, err1 := shopkey.GetShopIDFrom(ctx, req.ShopId)
 	if err1 != nil {
 		return err1
@@ -64,7 +61,6 @@ func (a *AttributeHandler) ReadAttribute(ctx context.Context, req *proto.ReadAtt
 	}
 
 	rsp.Record = attribute
-
 	return nil
 }
 
