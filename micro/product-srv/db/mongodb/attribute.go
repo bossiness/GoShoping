@@ -100,20 +100,17 @@ func (m *Mongo) ReadAttribute(dbname string, code string) (*proto.AttributesReco
 // UpdateAttribute update
 func (m *Mongo) UpdateAttribute(dbname string, code string, record *proto.AttributesRecord) error {
 	c := m.session.DB(dbname).C(attributesCollectionName)
-
 	selector := bson.M{"code": code}
 	updataData := bson.M{"$set": bson.M{
-		// "type":          record.Type,
+		"name":          record.Name,
 		"configuration": record.Configuration,
 		"updated_at":    time.Now()}}
-
 	return c.Update(selector, updataData)
 }
 
 // DeleteAttribute Remove
 func (m *Mongo) DeleteAttribute(dbname string, code string) error {
 	c := m.session.DB(dbname).C(attributesCollectionName)
-
 	selector := bson.M{"code": code}
 	return c.Remove(selector)
 }

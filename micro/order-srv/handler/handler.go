@@ -86,6 +86,17 @@ func (h *Handler) DeleteOrder(ctx context.Context, req *proto.DeleteOrderRequest
 
 // ReadCustomerOrders is a single request handler called via client.ReadCustomerOrders or the generated client code
 func (h *Handler) ReadCustomerOrders(ctx context.Context, req *proto.ReadCustomerOrdersRequest, rsp *proto.ReadCustomerOrdersResponse) error {
+	shopID, err1 := shopkey.GetShopIDFrom(ctx, req.ShopId)
+	if err1 != nil {
+		return err1
+	}
+
+	orders, err := db.ReadCustomerOrders(shopID, req.Customer)
+	if err != nil {
+		return errors.NotFound(svrName + ".ReadOrders", err.Error())
+	}
+
+	rsp.Records = *orders
 	return nil
 }
 

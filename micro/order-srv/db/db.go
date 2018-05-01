@@ -9,6 +9,7 @@ type DB interface {
 	Init() error
 	Deinit()
 	Order
+	OrderItem
 }
 
 var (
@@ -66,9 +67,22 @@ func ReadCustomerOrders(dbname string, customer string) (*[]*proto.OrderRecord, 
 
 // OrderItem is Order
 type OrderItem interface {
-	CreateOrderItem(dbname string, order string) (string, error)
-	ReadOrders(dbname string, state string, checkoutState string, offset int, limit int) (*[]*proto.OrderRecord, error)
-	ReadOrder(dbname string, uuid string) (*proto.OrderRecord, error)
-	DeleteOrder(dbname string, uuid string) error
-	ReadCustomerOrders(dbname string, customer string) (*[]*proto.OrderRecord, error)
+	CreateOrderItem(dbname string, order string, item *proto.OrderRecord_Item) (string, error)
+	UpdateOrderItem(dbname string, order string, id string, item *proto.OrderRecord_Item) error
+	DeleteOrderItem(dbname string, order string, id string) error
+}
+
+// CreateOrderItem create order item
+func CreateOrderItem(dbname string, order string, item *proto.OrderRecord_Item) (string, error) {
+	return db.CreateOrderItem(dbname, order, item)
+}
+
+// UpdateOrderItem update order item
+func UpdateOrderItem(dbname string, order string, id string, item *proto.OrderRecord_Item) error {
+	return db.UpdateOrderItem(dbname, order, id, item)
+}
+
+// DeleteOrderItem delete order item
+func DeleteOrderItem(dbname string, order string, id string) error {
+	return db.DeleteOrderItem(dbname, order, id)
 }
