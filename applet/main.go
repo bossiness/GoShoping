@@ -7,6 +7,7 @@ import (
 	"btdxcx.com/applet/shop-api"
 	"btdxcx.com/applet/taxons-api"
 	"btdxcx.com/applet/weixin-api"
+	"btdxcx.com/applet/order-api"
 
 	ccli "github.com/micro/cli"
 	"github.com/micro/go-micro/cmd"
@@ -38,6 +39,7 @@ func main() {
 	app.Commands = append(app.Commands, taxonsapi.Commands()...)
 	app.Commands = append(app.Commands, shopapi.Commands()...)
 	app.Commands = append(app.Commands, weixinapi.Commands()...)
+	app.Commands = append(app.Commands, orderapi.Commands()...)
 	app.Action = func(context *ccli.Context) {
 		ccli.ShowAppHelp(context)
 	}
