@@ -375,66 +375,12 @@ func (m *Mongo) UpdateDetails(req *dproto.UpdateRequest) error {
 	}
 
 	shop := &ShopDetails{}
-	c.Find(selector).One(shop)
+	if err := c.Find(selector).One(shop); err != nil {
+		return err
+	}
 	if req.Details != nil {
-		if req.Details.Owner != nil {
-			owner := req.Details.Owner
-			if shop.Owner.Id != nil {
-				if c := m.session.DB(shop.Owner.Database).C(shop.Owner.Collection); c != nil {
-					updataData := bson.M{"$set": bson.M{
-						"nickname": owner.Nickname,
-						"phone":    owner.Phone,
-					}}
-					c.UpdateId(shop.Owner.Id, updataData)
-				}
-			}
-		}
-		if req.Details.Weixin != nil {
-			weixin := req.Details.Weixin
-			if shop.WeiXin.Id != nil {
-				if c := m.session.DB(shop.WeiXin.Database).C(shop.WeiXin.Collection); c != nil {
-					updataData := bson.M{"$set": bson.M{
-						"wechat_id":   weixin.WechatId,
-						"appid":       weixin.Appid,
-						"app_secret":  weixin.AppSecret,
-						"partner_id":  weixin.PartnerId,
-						"partner_key": weixin.PartnerKey,
-					}}
-					c.UpdateId(shop.WeiXin.Id, updataData)
-				}
-			}
-		}
-		if req.Details.Physical != nil {
-			physical := req.Details.Physical
-			if shop.Physical.Id != nil {
-				if physical.Location == nil {
-					physical.Location = &dproto.ShopDetails_PhysicalStore_Location{}
-				}
-				if c := m.session.DB(shop.Physical.Database).C(shop.Physical.Collection); c != nil {
-					updataData := bson.M{"$set": bson.M{
-						"name":               physical.Name,
-						"contact":            physical.Contact,
-						"email":              physical.Email,
-						"zipCode":            physical.ZipCode,
-						"address":            physical.Address,
-						"location.latitude":  physical.Location.Latitude,
-						"location.longitude": physical.Location.Longitude,
-					}}
-					c.UpdateId(shop.Physical.Id, updataData)
-				}
-			}
-		}
-
-		updataData := bson.M{"$set": bson.M{
-			"update_at": time.Now().Unix(),
-			"submit_at": submitAt,
-			"period_at": perioAt,
-			"state":     req.State,
-			"name":      req.Details.Name,
-			"logo":      req.Details.Logo,
-			"introduce": req.Details.Introduce,
-		}}
-		return c.Update(selector, updataData)
+		m.updateDetails(shop, req.Details, req.State,
+			perioAt, submitAt, selector)
 
 	}
 
@@ -446,6 +392,195 @@ func (m *Mongo) UpdateDetails(req *dproto.UpdateRequest) error {
 	}}
 	return c.Update(selector, updataData)
 
+}
+
+func (m *Mongo) updateDetails(
+	shop *ShopDetails, details *dproto.ShopDetails, state dproto.State,
+	perioAt int64, submitAt int64,
+	selector bson.M,
+) error {
+	c := m.session.DB(databaseName).C(tblDetails)
+
+	m.updateDetailsOwner(shop, details.Owner, selector)
+	m.updateDetailsWeixin(shop, details.Weixin, selector)
+	m.updateDetailsPhysical(shop, details.Physical, selector)
+
+	updataData := bson.M{"$set": bson.M{
+		"update_at": time.Now().Unix(),
+		"submit_at": submitAt,
+		"period_at": perioAt,
+		"state":     state,
+		"name":      details.Name,
+		"logo":      details.Logo,
+		"introduce": details.Introduce,
+	}}
+	return c.Update(selector, updataData)
+}
+
+func (m *Mongo) updateDetailsOwner(shop *ShopDetails, sowner *dproto.ShopDetails_ShopOwner, selector bson.M) {
+	if sowner == nil {
+		return
+	}
+
+	if shop.Owner.Id != nil && len(shop.Owner.Database) > 0 && len(shop.Owner.Collection) > 0 {
+		if oc := m.session.DB(shop.Owner.Database).C(shop.Owner.Collection); oc != nil {
+			updataData := bson.M{"$set": bson.M{
+				"nickname": sowner.Nickname,
+				"phone":    sowner.Phone,
+			}}
+			oc.UpdateId(shop.Owner.Id, updataData)
+		}
+		return
+	}
+
+	ownerC := m.session.DB(databaseName).C(tblOwner)
+	c := m.session.DB(databaseName).C(tblDetails)
+
+	index := mgo.Index{
+		Key:        []string{"name"},
+		Unique:     true,
+		DropDups:   true,
+		Background: true,
+	}
+
+	if err := ownerC.EnsureIndex(index); err != nil {
+		return
+	}
+
+	ownerID := bson.NewObjectId()
+	owner := &ShopOwner{
+		ID:       ownerID,
+		Name:     sowner.Name,
+		Nickname: sowner.Nickname,
+		Phone:    sowner.Phone,
+	}
+	if err := ownerC.Insert(owner); err != nil {
+		return
+	}
+	ownerRef := mgo.DBRef{
+		Collection: tblOwner,
+		Id:         ownerID,
+		Database:   databaseName,
+	}
+
+	updataData := bson.M{"$set": bson.M{
+		"owner": ownerRef,
+	}}
+
+	c.Update(selector, updataData)
+
+}
+
+func (m *Mongo) updateDetailsWeixin(shop *ShopDetails, sweixin *dproto.ShopDetails_WeiXin, selector bson.M) {
+	if sweixin == nil {
+		return
+	}
+
+	if shop.WeiXin.Id != nil && len(shop.WeiXin.Database) > 0 && len(shop.WeiXin.Collection) > 0 {
+		if wc := m.session.DB(shop.WeiXin.Database).C(shop.WeiXin.Collection); wc != nil {
+			updataData := bson.M{"$set": bson.M{
+				"wechat_id":   sweixin.WechatId,
+				"appid":       sweixin.Appid,
+				"app_secret":  sweixin.AppSecret,
+				"partner_id":  sweixin.PartnerId,
+				"partner_key": sweixin.PartnerKey,
+			}}
+			wc.UpdateId(shop.WeiXin.Id, updataData)
+		}
+		return
+	}
+
+	wxC := m.session.DB(databaseName).C(tblWX)
+	c := m.session.DB(databaseName).C(tblDetails)
+
+	id := bson.NewObjectId()
+	weixin := &WeiXin{
+		ID:         id,
+		WechatID:   sweixin.WechatId,
+		Appid:      sweixin.Appid,
+		AppSecret:  sweixin.AppSecret,
+		PartnerID:  sweixin.PartnerId,
+		PartnerKey: sweixin.PartnerKey,
+	}
+	if err := wxC.Insert(weixin); err != nil {
+		return
+	}
+	wxRef := mgo.DBRef{
+		Collection: tblWX,
+		Id:         id,
+		Database:   databaseName,
+	}
+
+	updataData := bson.M{"$set": bson.M{
+		"weixin": wxRef,
+	}}
+
+	c.Update(selector, updataData)
+}
+
+func (m *Mongo) updateDetailsPhysical(shop *ShopDetails, sphysical *dproto.ShopDetails_PhysicalStore, selector bson.M) {
+	if sphysical == nil {
+		return
+	}
+
+	if shop.Physical.Id != nil && len(shop.Physical.Database) > 0 && len(shop.Physical.Collection) > 0 {
+		if sphysical.Location == nil {
+			sphysical.Location = &dproto.ShopDetails_PhysicalStore_Location{}
+		}
+		if c := m.session.DB(shop.Physical.Database).C(shop.Physical.Collection); c != nil {
+			updataData := bson.M{"$set": bson.M{
+				"name":               sphysical.Name,
+				"contact":            sphysical.Contact,
+				"email":              sphysical.Email,
+				"zipCode":            sphysical.ZipCode,
+				"address":            sphysical.Address,
+				"location.latitude":  sphysical.Location.Latitude,
+				"location.longitude": sphysical.Location.Longitude,
+			}}
+			c.UpdateId(shop.Physical.Id, updataData)
+		}
+		return
+	}
+
+	physicalC := m.session.DB(databaseName).C(tblPhysical)
+	c := m.session.DB(databaseName).C(tblDetails)
+
+	physicalID := bson.NewObjectId()
+	var (
+		latitude  float64
+		longitude float64
+	)
+	if sphysical.Location != nil {
+		latitude = sphysical.Location.Latitude
+		longitude = sphysical.Location.Longitude
+	}
+	physical := &PhysicalStore{
+		ID:      physicalID,
+		Name:    sphysical.Name,
+		Contact: sphysical.Contact,
+		Email:   sphysical.Email,
+		ZipCode: sphysical.ZipCode,
+		Address: sphysical.Address,
+		Location: Location{
+			Latitude:  latitude,
+			Longitude: longitude,
+		},
+	}
+	if err := physicalC.Insert(physical); err != nil {
+		return
+	}
+
+	physicalRef := mgo.DBRef{
+		Collection: tblPhysical,
+		Id:         physicalID,
+		Database:   databaseName,
+	}
+
+	updataData := bson.M{"$set": bson.M{
+		"physical": physicalRef,
+	}}
+
+	c.Update(selector, updataData)
 }
 
 // ListDetails list

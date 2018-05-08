@@ -1,12 +1,14 @@
 package handler
 
 import (
+	"gopkg.in/mgo.v2"
 	"context"
 	"btdxcx.com/micro/shop-srv/wrapper/inspection/shop-key"
 	"btdxcx.com/micro/order-srv/db"
 	"github.com/micro/go-micro/errors"
 
 	proto "btdxcx.com/micro/order-srv/proto/order"
+	jwtauth "btdxcx.com/micro/jwtauth-srv/wrapper"
 )
 
 const (
@@ -23,13 +25,18 @@ func (h *Handler) CreateCart(ctx context.Context, req *proto.CreateCartRequest, 
 		return err1
 	}
 
-	orderID, err := db.CreateOrder(shopID, req.Customer)
-	if err != nil {
-		return errors.InternalServerError(svrName + ".CreateCart", err.Error())
+	customer, err3 := jwtauth.GetClientIDFrom(ctx, req.Customer)
+	if err3 != nil {
+		return errors.InternalServerError(svrName + ".CreateCart", err3.Error())
 	}
-	record, err1 := db.ReadOrder(shopID, orderID)
-	if err1 != nil {
-		return errors.InternalServerError(svrName + ".CreateCart", err1.Error())
+
+	orderID, err := db.CreateOrder(shopID, customer)
+	if err != nil {
+		return errors.NotFound(svrName + ".CreateCart", err.Error())
+	}
+	record, err2 := db.ReadOrder(shopID, orderID)
+	if err2 != nil {
+		return errors.InternalServerError(svrName + ".CreateCart", err2.Error())
 	}
 
 	rsp.Record = record
@@ -90,7 +97,12 @@ func (h *Handler) ReadCustomerOrders(ctx context.Context, req *proto.ReadCustome
 		return err1
 	}
 
-	orders, err := db.ReadCustomerOrders(shopID, req.Customer)
+	customer, err3 := jwtauth.GetClientIDFrom(ctx, req.Customer)
+	if err3 != nil {
+		return errors.InternalServerError(svrName + ".CreateCart", err3.Error())
+	}
+
+	orders, err := db.ReadCustomerOrders(shopID, customer, req.State, req.CheckoutState)
 	if err != nil {
 		return errors.NotFound(svrName + ".ReadCustomerOrders", err.Error())
 	}
@@ -112,6 +124,9 @@ func (h *Handler) CreateCartItem(ctx context.Context, req *proto.CreateCartItemR
 	}
 	id, err := db.CreateOrderItem(shopID, req.CartId, item)
 	if err != nil {
+		if mgo.IsDup(err) {
+			return errors.Conflict(svrName + ".CreateCartItem", err.Error())
+		}
 		return errors.NotFound(svrName + ".CreateCartItem", err.Error())
 	}
 

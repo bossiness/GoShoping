@@ -1,6 +1,8 @@
 package mongodb
 
 import (
+	"gopkg.in/mgo.v2"
+	"errors"
 	"time"
 
 	proto "btdxcx.com/micro/order-srv/proto/order"
@@ -31,7 +33,18 @@ func (m *Mongo) CreateOrderItem(dbname string, order string, item *proto.OrderRe
 	vc := m.session.DB(dbname).C(variantsCollectionName)
 
 	variant := new(productdb.Variant)
-	if err := vc.FindId(bson.ObjectIdHex(item.Variant)).One(&variant); err != nil {
+	if err := vc.Find(bson.M{"sku": item.Variant}).One(&variant); err != nil {
+		return "", errors.New("sku not found")
+	}
+
+	index := mgo.Index{
+		Key:        []string{"order_id", "variant"},
+		Unique:     true,
+		DropDups:   true,
+		Background: true,
+	}
+
+	if err := c.EnsureIndex(index); err != nil {
 		return "", err
 	}
 
@@ -57,10 +70,10 @@ func (m *Mongo) UpdateOrderItem(dbname string, id string, item *proto.OrderRecor
 	selector := bson.ObjectIdHex(id)
 	updataData := bson.M{"$set": bson.M{
 		"quantity":   item.Quantity,
-		"unitPrice":  item.UnitPrice,
+		// "unitPrice":  item.UnitPrice,
 		"updated_at": time.Now()}}
 
-	return c.Update(selector, updataData)
+	return c.UpdateId(selector, updataData)
 }
 
 // DeleteOrderItem delete order item

@@ -98,6 +98,27 @@ func FromCtx(ctx context.Context) (string, error) {
 	return md["Token"], nil
 }
 
+func getClientIDFrom(ctx context.Context) (string, error) {
+	md, ok := metadata.FromContext(ctx)
+	if !ok {
+		// noop
+		return "", errors.Unauthorized("auth wrapper", "loss token")
+	}
+	return md["Clientid"], nil
+}
+
+// GetClientIDFrom from header get shop id
+func GetClientIDFrom(ctx context.Context, defID string) (string, error) {
+	sid, err := getClientIDFrom(ctx)
+	if err == nil {
+		return sid, nil
+	}
+	if len(defID) == 0 {
+		return "", err
+	}
+	return defID, nil
+}
+
 // NewContext new bearer authorization context
 func NewContext(context context.Context, bearer string) context.Context {
 	return newContex(context, "Authorization", bearer)

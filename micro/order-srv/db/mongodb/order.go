@@ -1,6 +1,9 @@
 package mongodb
 
 import (
+	"errors"
+	"time"
+
 	proto "btdxcx.com/micro/order-srv/proto/order"
 	"gopkg.in/mgo.v2/bson"
 
@@ -73,6 +76,9 @@ func (m *Mongo) CreateOrder(dbname string, customer string) (string, error) {
 
 	resultCustomer := customerDB.Customer{}
 	if err := cc.Find(bson.M{"username": customer}).One(&resultCustomer); err != nil {
+		if err.Error() == "not found" {
+			return "", errors.New("not found customer")
+		}
 		return "", err
 	}
 
@@ -84,6 +90,7 @@ func (m *Mongo) CreateOrder(dbname string, customer string) (string, error) {
 		ItemsTotal:       0,
 		State:            "cart",
 		CheckoutState:    "cart",
+		CreatedAt:        time.Now().Unix(),
 	}
 	if err := c.Insert(doc); err != nil {
 		return "", err
@@ -99,11 +106,11 @@ func (m *Mongo) ReadOrders(dbname string, state string, checkoutState string, of
 	results := []Order{}
 	query := bson.M{}
 	if len(state) != 0 && len(checkoutState) != 0 {
-		query = bson.M{ "state": state, "checkoutState": checkoutState }
+		query = bson.M{"state": state, "checkoutState": checkoutState}
 	} else if len(state) != 0 {
-		query = bson.M{ "state": state }
+		query = bson.M{"state": state}
 	} else if len(checkoutState) != 0 {
-		query = bson.M{ "checkoutState": checkoutState }
+		query = bson.M{"checkoutState": checkoutState}
 	} else {
 		query = nil
 	}
@@ -122,22 +129,22 @@ func (m *Mongo) ReadOrders(dbname string, state string, checkoutState string, of
 func (m *Mongo) mapOrder(dbname string, order *Order) *proto.OrderRecord {
 	adjustmentsTotal, adjustments := m.readAdjustments(dbname, order.Adjustments)
 	return &proto.OrderRecord{
-		Uuid: order.ID.Hex(),
-		Items: m.readOrderItems(dbname, order.ID),
-		ItemsTotal: order.ItemsTotal,
-		Adjustments: adjustments,
-		AdjustmentsTotal: adjustmentsTotal,
-		Total: order.Total,
-		ShippingAddress: m.readShippingAddress(dbname, order.ShippingAddress),
-		BillingAddress: m.readBillingAddress(dbname, order.BillingAddress),
-		Shipment: m.mapShipment(&order.Shipment),
-		Payment: m.mapPayment(&order.Payment),
-		Customer: m.readCustomer(dbname, order.Customer),
-		State: order.State,
-		CheckoutState: order.CheckoutState,
+		Uuid:               order.ID.Hex(),
+		Items:              m.readOrderItems(dbname, order.ID),
+		ItemsTotal:         order.ItemsTotal,
+		Adjustments:        adjustments,
+		AdjustmentsTotal:   adjustmentsTotal,
+		Total:              order.Total,
+		ShippingAddress:    m.readShippingAddress(dbname, order.ShippingAddress),
+		BillingAddress:     m.readBillingAddress(dbname, order.BillingAddress),
+		Shipment:           m.mapShipment(&order.Shipment),
+		Payment:            m.mapPayment(&order.Payment),
+		Customer:           m.readCustomer(dbname, order.Customer),
+		State:              order.State,
+		CheckoutState:      order.CheckoutState,
 		CheckoutCompleteAt: order.CheckoutCompleteAt,
-		CreatedAt: order.CreatedAt,
-		UpdatedAt: order.UpdatedAt,
+		CreatedAt:          order.CreatedAt,
+		UpdatedAt:          order.UpdatedAt,
 	}
 }
 
@@ -171,13 +178,13 @@ func (m *Mongo) readOrderItems(dbname string, orderID bson.ObjectId) []*proto.Or
 		adjustmentsTotal, adjustments := m.readAdjustments(dbname, item.Adjustments)
 		total := (item.Quantity * item.UnitPrice) + adjustmentsTotal
 		oi := proto.OrderRecord_Item{
-			Uuid: item.OrderID.Hex(),
-			Quantity: item.Quantity,
-			UnitPrice: item.UnitPrice,
-			Total: total,
-			Adjustments: adjustments,
+			Uuid:             item.OrderID.Hex(),
+			Quantity:         item.Quantity,
+			UnitPrice:        item.UnitPrice,
+			Total:            total,
+			Adjustments:      adjustments,
 			AdjustmentsTotal: adjustmentsTotal,
-			Variant: item.Variant,
+			Variant:          item.Variant,
 		}
 		recordItems = append(recordItems, &oi)
 	}
@@ -208,8 +215,13 @@ func (m *Mongo) mapPayment(os *OrderPayment) *proto.OrderRecord_Payment {
 func (m *Mongo) ReadOrder(dbname string, uuid string) (*proto.OrderRecord, error) {
 	c := m.session.DB(dbname).C(ordersCollectionName)
 
+	if !bson.IsObjectIdHex(uuid) {
+		return nil, errors.New("unexpected ID")
+	}
+
 	result := Order{}
-	if err := c.FindId(bson.ObjectIdHex(uuid)).One(&result); err != nil {
+	id := bson.ObjectIdHex(uuid)
+	if err := c.FindId(id).One(&result); err != nil {
 		return nil, err
 	}
 	return m.mapOrder(dbname, &result), nil
@@ -218,6 +230,10 @@ func (m *Mongo) ReadOrder(dbname string, uuid string) (*proto.OrderRecord, error
 // DeleteOrder delete order
 func (m *Mongo) DeleteOrder(dbname string, uuid string) error {
 	c := m.session.DB(dbname).C(ordersCollectionName)
+
+	if !bson.IsObjectIdHex(uuid) {
+		return errors.New("unexpected ID")
+	}
 
 	result := Order{}
 	if err := c.FindId(bson.ObjectIdHex(uuid)).One(&result); err != nil {
@@ -231,11 +247,18 @@ func (m *Mongo) DeleteOrder(dbname string, uuid string) error {
 }
 
 // ReadCustomerOrders delete order
-func (m *Mongo) ReadCustomerOrders(dbname string, customer string) (*[]*proto.OrderRecord, error) {
+func (m *Mongo) ReadCustomerOrders(dbname string, customer string, state string, checkoutState string) (*[]*proto.OrderRecord, error) {
 	c := m.session.DB(dbname).C(ordersCollectionName)
 
 	results := []Order{}
 	query := bson.M{"customer": customer}
+	if len(state) != 0 && len(checkoutState) != 0 {
+		query = bson.M{"customer": customer, "state": state, "checkoutState": checkoutState}
+	} else if len(state) != 0 {
+		query = bson.M{"customer": customer, "state": state}
+	} else if len(checkoutState) != 0 {
+		query = bson.M{"customer": customer, "checkoutState": checkoutState}
+	} 
 	if err := c.Find(query).All(&results); err != nil {
 		return nil, err
 	}
@@ -245,5 +268,5 @@ func (m *Mongo) ReadCustomerOrders(dbname string, customer string) (*[]*proto.Or
 		records = append(records, m.mapOrder(dbname, &order))
 	}
 
-	return nil, nil
+	return &records, nil
 }

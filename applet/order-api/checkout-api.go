@@ -21,7 +21,7 @@ const (
 
 func checkout(ctx *cli.Context) {
 	service := web.NewService(
-		web.Name(cartsAPIServiceName),
+		web.Name(checkoutAPIServiceName),
 		web.RegisterTTL(
 			time.Duration(ctx.GlobalInt("register_ttl"))*time.Second,
 		),
@@ -48,6 +48,7 @@ func checkout(ctx *cli.Context) {
 	ws.Path("/checkouts")
 
 	ws.Route(ws.GET("/{id}").To(api.noop))
+	ws.Route(ws.PATCH("/{id}/new").To(api.noop))
 	ws.Route(ws.PUT("/{id}/addressing").To(api.noop))
 	ws.Route(ws.GET("/{id}/select-shipping").To(api.noop))
 	ws.Route(ws.PUT("/{id}/select-shipping").To(api.noop))
@@ -64,3 +65,9 @@ func checkout(ctx *cli.Context) {
 
 }
 
+func (api *API) newCheckout(req *restful.Request, rsp *restful.Response) {
+	ctx := shopkey.NewNewContext(req.Request.Context(), req.HeaderParameter("X-SHOP-KEY"))
+	ctx = wrapper.NewContext(ctx, req.HeaderParameter("Authorization"))
+
+	
+}

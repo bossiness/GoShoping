@@ -45,7 +45,10 @@ func (h *DetailsHandler) Read(ctx context.Context, req *proto.ReadRequest, rsp *
 	}
 
 	if _, err := uuid.FromString(shopID); err != nil {
-		return errors.BadRequest("com.btdxcx.micro.srv.shop.details.Read", err.Error())
+		if _, err := uuid.FromString(req.ShopId); err != nil {
+			return errors.BadRequest("com.btdxcx.micro.srv.shop.details.Read", err.Error())
+		}
+		shopID = req.ShopId
 	}
 
 	result, err := db.ReadDetails(shopID)
@@ -106,7 +109,10 @@ func (h *DetailsHandler) Update(ctx context.Context, req *proto.UpdateRequest, r
 	}
 
 	if _, err := uuid.FromString(shopID); err != nil {
-		return errors.BadRequest("com.btdxcx.micro.srv.shop.details.Read", err.Error())
+		if _, err := uuid.FromString(req.ShopId); err != nil {
+			return errors.BadRequest("com.btdxcx.micro.srv.shop.details.Update", err.Error())
+		}
+		shopID = req.ShopId
 	}
 	req.ShopId = shopID
 

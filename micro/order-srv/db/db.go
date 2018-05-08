@@ -37,7 +37,7 @@ type Order interface {
 	ReadOrders(dbname string, state string, checkoutState string, offset int, limit int) (*[]*proto.OrderRecord, error)
 	ReadOrder(dbname string, uuid string) (*proto.OrderRecord, error)
 	DeleteOrder(dbname string, uuid string) error
-	ReadCustomerOrders(dbname string, customer string) (*[]*proto.OrderRecord, error)
+	ReadCustomerOrders(dbname string, customer string, state string, checkoutState string) (*[]*proto.OrderRecord, error)
 }
 
 // CreateOrder create order
@@ -61,8 +61,8 @@ func DeleteOrder(dbname string, uuid string) error {
 }
 
 // ReadCustomerOrders delete order
-func ReadCustomerOrders(dbname string, customer string) (*[]*proto.OrderRecord, error) {
-	return db.ReadCustomerOrders(dbname, customer)
+func ReadCustomerOrders(dbname string, customer string, state string, checkoutState string) (*[]*proto.OrderRecord, error) {
+	return db.ReadCustomerOrders(dbname, customer, state, checkoutState)
 }
 
 // OrderItem is Order
