@@ -12,6 +12,7 @@ import (
 
 const (
 	variantsCollectionName = "variants"
+	orderItemsCollectionName = "orderItems"
 )
 
 // OrderItem DB

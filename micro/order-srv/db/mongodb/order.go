@@ -13,7 +13,6 @@ import (
 const (
 	ordersCollectionName     = "orders"
 	customersCollectionName  = "customers"
-	orderItemsCollectionName = "orderItems"
 )
 
 // Order DB

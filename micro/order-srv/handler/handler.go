@@ -164,6 +164,16 @@ func (h *Handler) DeleteCartItem(ctx context.Context, req *proto.DeleteCartItemR
 	return nil
 }
 
+// CheckoutNew is a single request handler called via client.CheckoutNew or the generated client code
+func (h *Handler) CheckoutNew(ctx context.Context, req *proto.CheckoutNewRequest, rsp *proto.Response) error {
+	shopID, err1 := shopkey.GetShopIDFrom(ctx, req.ShopId)
+	if err1 != nil {
+		return err1
+	}
+
+	
+}
+
 // CheckoutAddressing is a single request handler called via client.CheckoutAddressing or the generated client code
 func (h *Handler) CheckoutAddressing(context.Context, *proto.CheckoutAddressingRequest, *proto.Response) error {
 	return nil

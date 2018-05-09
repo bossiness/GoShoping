@@ -10,6 +10,7 @@ type DB interface {
 	Deinit()
 	Order
 	OrderItem
+	Checkout
 }
 
 var (
@@ -85,4 +86,39 @@ func UpdateOrderItem(dbname string, id string, item *proto.OrderRecord_Item) err
 // DeleteOrderItem delete order item
 func DeleteOrderItem(dbname string, id string) error {
 	return db.DeleteOrderItem(dbname, id)
+}
+
+
+// Checkout is Order
+type Checkout interface {
+	CheckoutNew(dbname string, orderID string) error
+	CheckoutAddressing(dbname string, orderID string, shipping *proto.Address, billing *proto.Address) error
+	CheckoutSelectShipping(dbname string, orderID string, method string) error
+	CheckoutSelectPayment(dbname string, orderID string, method string) error
+	CheckoutComplete(dbname string, orderID string) error
+}
+
+// CheckoutNew new chekout
+func CheckoutNew(dbname string, orderID string) error {
+	return db.CheckoutNew(dbname, orderID)
+}
+
+// CheckoutAddressing chekout addressing
+func CheckoutAddressing(dbname string, orderID string, shipping *proto.Address, billing *proto.Address) error {
+	return db.CheckoutAddressing(dbname, orderID, shipping, billing)
+}
+
+// CheckoutSelectShipping chekout shipping
+func CheckoutSelectShipping(dbname string, orderID string, method string) error {
+	return db.CheckoutSelectShipping(dbname, orderID, method)
+}
+
+// CheckoutSelectPayment chekout payment
+func CheckoutSelectPayment(dbname string, orderID string, method string) error {
+	return db.CheckoutSelectPayment(dbname, orderID, method)
+}
+
+// CheckoutComplete chekout complete
+func CheckoutComplete(dbname string, orderID string) error {
+	return db.CheckoutComplete(dbname, orderID)
 }
