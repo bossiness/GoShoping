@@ -1,6 +1,7 @@
 package weixinapi
 
 import (
+	"fmt"
 	"net/http"
 	"time"
 
@@ -20,7 +21,7 @@ import (
 	"github.com/micro/go-web"
 	"github.com/satori/go.uuid"
 
-	"gopkg.in/resty.v1"
+	"github.com/levigross/grequests"
 )
 
 // Commands add weixin api command
@@ -62,7 +63,7 @@ func api(ctx *cli.Context) {
 
 	shopkeyWrapper := shopkey.NewClientWrapper("X-SHOP-KEY", "mini")
 	shopCl = shop.NewShopClient(shopClientName, shopkeyWrapper(client.DefaultClient))
-	customerCl = customer.NewCustomerClient(shopClientName, shopkeyWrapper(client.DefaultClient))
+	customerCl = customer.NewCustomerClient(customerClientName, shopkeyWrapper(client.DefaultClient))
 	accountCl = account.NewAccountClient(accountClientName, shopkeyWrapper(client.DefaultClient))
 	jwtauthCl = jwtauth.NewJwtAuthClient(jwtauthClientName, shopkeyWrapper(client.DefaultClient))
 
@@ -75,7 +76,7 @@ func api(ctx *cli.Context) {
 	ws.Produces(restful.MIME_JSON, restful.MIME_XML)
 	ws.Path("/weixin")
 
-	ws.Route(ws.GET("/auth/sns/signin").To(api.snsSignin))
+	ws.Route(ws.POST("/auth/sns/signin").To(api.snsSignin))
 
 	wc.Add(ws)
 	service.Handle("/", wc)
@@ -119,20 +120,28 @@ func (api *API) snsSignin(req *restful.Request, rsp *restful.Response) {
 		return
 	}
 
-	result := new(SnsSigninResponse)
-	snsSigninError := new(SnsSigninError)
-	if _, err := resty.R().
-		SetQueryParams(map[string]string{
+	ro := &grequests.RequestOptions{
+		Params: map[string]string{
 			"appid":      appid,
 			"secret":     secret,
 			"js_code":    code,
 			"grant_type": "authorization_code",
-		}).
-		SetHeader("Accept", "application/json").
-		SetResult(result).
-		SetError(snsSigninError).
-		Get("https://api.weixin.qq.com/sns/jscode2session"); err != nil {
-		rsp.WriteError(http.StatusVariantAlsoNegotiates, errors.New(apiServiceName, snsSigninError.Errmsg, snsSigninError.Errcode))
+		},
+	}
+	resp, err := grequests.Get("https://api.weixin.qq.com/sns/jscode2session", ro)
+	if err != nil {
+		rsp.WriteError(http.StatusVariantAlsoNegotiates, errors.New(apiServiceName, "api.weixin.qq.com", 500))
+		return
+	}
+	result := SnsSigninResponse{}
+	resp.JSON(&result)
+
+	if result.Errcode != 0 {
+		rsp.WriteError(http.StatusVariantAlsoNegotiates, errors.New(apiServiceName, result.Errmsg, result.Errcode))
+		return
+	}
+	if len(result.Openid) == 0 {
+		rsp.WriteError(http.StatusVariantAlsoNegotiates, errors.New(apiServiceName, "Openid not find", 404))
 		return
 	}
 
@@ -177,14 +186,14 @@ func (api *API) snsSignin(req *restful.Request, rsp *restful.Response) {
 			rsp.WriteError(http.StatusInternalServerError, err2)
 			return
 		}
-		ain := &account.CreateRequest{ 
+		ain := &account.CreateRequest{
 			Account: &account.Record{
-				Id: uid.String(),
-				Type: "mini",
-				ClientId: result.Openid,
+				Id:           uid.String(),
+				Type:         "mini",
+				ClientId:     result.Openid,
 				ClientSecret: result.Openid,
-				Created: time.Now().Unix(),
-			}, 
+				Created:      time.Now().Unix(),
+			},
 		}
 		if _, err3 := accountCl.Create(ctx, ain); err3 != nil {
 			customerror.WriteError(err3, rsp)
@@ -193,9 +202,9 @@ func (api *API) snsSignin(req *restful.Request, rsp *restful.Response) {
 	}
 
 	jin := &jwtauth.TokenRequest{
-		ClientId: result.Openid,
+		ClientId:      result.Openid,
 		ClientSecrent: result.Openid,
-		Scopes: []string{ "mini" },
+		Scopes:        []string{"mini"},
 	}
 	token, err4 := jwtauthCl.Token(ctx, jin)
 	if err4 != nil {
@@ -221,10 +230,16 @@ type SnsSigninResponse struct {
 	Openid     string `json:"openid"`
 	SessionKey string `json:"session_key"`
 	Unionid    string `json:"unionid"`
+	Errcode    int32  `json:"errcode"`
+	Errmsg     string `json:"errmsg"`
 }
 
 // SnsSigninError 微信平台
 type SnsSigninError struct {
 	Errcode int32  `json:"errcode"`
 	Errmsg  string `json:"errmsg"`
+}
+
+func (s *SnsSigninResponse) Error() string {
+	return fmt.Sprintf("[%d %s]", s.Errcode, s.Errmsg)
 }
