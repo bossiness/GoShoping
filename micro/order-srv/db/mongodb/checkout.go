@@ -1,12 +1,26 @@
 package mongodb
 
 import (
+	"errors"
+	"time"
+
+	"gopkg.in/mgo.v2/bson"
+
 	proto "btdxcx.com/micro/order-srv/proto/order"
 )
 
 // CheckoutNew new chekout
 func (m *Mongo) CheckoutNew(dbname string, orderID string) error {
-	return nil
+	c := m.session.DB(dbname).C(ordersCollectionName)
+	if !bson.IsObjectIdHex(orderID) {
+		return errors.New("unexpected order ID")
+	}
+
+	updataData := bson.M{"$set": bson.M{
+		"checkoutState": "new",
+		"updated_at":  time.Now()}}
+
+	return c.UpdateId(bson.ObjectId(orderID), updataData)
 }
 
 // CheckoutAddressing chekout addressing

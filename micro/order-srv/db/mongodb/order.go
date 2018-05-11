@@ -11,8 +11,8 @@ import (
 )
 
 const (
-	ordersCollectionName     = "orders"
-	customersCollectionName  = "customers"
+	ordersCollectionName    = "orders"
+	customersCollectionName = "customers"
 )
 
 // Order DB
@@ -257,7 +257,7 @@ func (m *Mongo) ReadCustomerOrders(dbname string, customer string, state string,
 		query = bson.M{"customer": customer, "state": state}
 	} else if len(checkoutState) != 0 {
 		query = bson.M{"customer": customer, "checkoutState": checkoutState}
-	} 
+	}
 	if err := c.Find(query).All(&results); err != nil {
 		return nil, err
 	}
