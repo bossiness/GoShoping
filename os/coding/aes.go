@@ -5,21 +5,6 @@ import (
     "crypto/cipher"
 )
 
-// func main() {
-//     aesEnc := AesEncrypt{}
-//     arrEncrypt, err := aesEnc.Encrypt("abcde")
-//     if err != nil {
-//         fmt.Println(arrEncrypt)
-//         return
-//     }
-//     strMsg, err := aesEnc.Decrypt(arrEncrypt)
-//     if err != nil {
-//         fmt.Println(arrEncrypt)
-//         return
-//     }
-//     fmt.Println(strMsg)
-// }
-
 // AesEncrypt struct
 type AesEncrypt struct {
 }
