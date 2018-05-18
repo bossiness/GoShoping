@@ -39,7 +39,7 @@ func (s ServeStatic) Path() string {
 }
 
 // RegisterTo static serve
-func (s ServeStatic) RegisterTo(server *server.APIServer) {
+func (s ServeStatic) RegisterTo(server server.APIServer) {
 	ws := new(restful.WebService)
 	ws.Path(s.Path())
 	
@@ -51,7 +51,7 @@ func (s ServeStatic) RegisterTo(server *server.APIServer) {
 	ws.Route( ws.GET("/images/{imgid}").To(image.Download))
 	ws.Route( ws.GET("/images").To(image.List))
 
-	server.Container().Add(ws)
+	server.GetContainer().Add(ws)
 
 	println("[go-restful] serving files on http://localhost:3001/static from local /tmp")
 }

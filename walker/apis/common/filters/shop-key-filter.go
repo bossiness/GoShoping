@@ -32,7 +32,6 @@ func ShopKEYFilter(tag string) restful.FilterFunction {
 				return
 			}
 		}
-
 		chain.ProcessFilter(req, resp)
 	}
 }

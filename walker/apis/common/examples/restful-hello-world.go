@@ -27,7 +27,7 @@ func (api HelloAPI) Path() string {
 }
 
 // RegisterTo api
-func (api HelloAPI) RegisterTo(server *server.APIServer) {
+func (api HelloAPI) RegisterTo(server server.APIServer) {
 	ws := new(restful.WebService)
 
 	ws.
@@ -37,14 +37,14 @@ func (api HelloAPI) RegisterTo(server *server.APIServer) {
 
 	ws.
 		Filter(filter.NCSACommonLogFormatLogger()).
-		Filter(filter.CORS(server.Container()))
+		Filter(filter.CORS(server.GetContainer()))
 
 	ws.Route(ws.GET("").To(hello).
 		// docs
 		Doc("hello").
 		Writes("world"))
 
-	server.Container().Add(ws)
+	server.GetContainer().Add(ws)
 }
 
 func hello(req *restful.Request, resp *restful.Response) {

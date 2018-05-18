@@ -1,19 +1,37 @@
 package main
 
 import (
+	"os"
 	"btdxcx.com/walker/apis/common/examples"
-	"btdxcx.com/walker/apis/common/server"
 	"btdxcx.com/walker/apis/common/static"
-)
+	"btdxcx.com/walker/apis/common/server"
 
+	"btdxcx.com/walker/apis/applet"
+	"github.com/micro/go-log"
+)
 
 func main() {
 
-	apis := server.NewAPIServer()
+	if len(os.Args) != 2 {
+		log.Log("apis [applet|test]")
+		return
+	}
 
-	static.NewServeStatic().RegisterTo(apis)
-	example.NewHelloAPI().RegisterTo(apis)
+	if os.Args[1] == "applet" {
+		apis := applet.NewAPIServer()
 
-	apis.Start()
+		static.NewServeStatic().RegisterTo(apis)
+		example.NewHelloAPI().RegisterTo(apis)
 
+		apis.Start()
+	} else if os.Args[1] == "test" {
+		apis := server.NewCommonAPIServer()
+
+		static.NewServeStatic().RegisterTo(apis)
+		example.NewHelloAPI().RegisterTo(apis)
+
+		apis.Start()
+	}
+
+	log.Log("apis [applet|test]")
 }
