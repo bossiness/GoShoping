@@ -32,7 +32,7 @@ func NewCommonAPIServer() *CommonAPIServer {
 	container.Router(restful.CurlyRouter{})
 	return &CommonAPIServer{
 		Host:            "localhost",
-		Port:            ":3001",
+		Port:            ":3010",
 		Container:       container,
 		SwaggerFilePath: "/tmp/swagger-ui/dist",
 	}
