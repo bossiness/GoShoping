@@ -28,8 +28,3 @@ func Token(req *restful.Request, rsp *restful.Response) {
 
 }
 
-// AuthRequest Auth Request
-type AuthRequest struct {
-	Username string `json:"username"`
-	Password string `json:"password"`
-}

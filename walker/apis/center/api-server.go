@@ -1,4 +1,4 @@
-package applet
+package center
 
 import (
 	"btdxcx.com/walker/apis/common/server"

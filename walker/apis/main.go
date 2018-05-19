@@ -7,13 +7,14 @@ import (
 	"btdxcx.com/walker/apis/common/server"
 
 	"btdxcx.com/walker/apis/applet"
+	"btdxcx.com/walker/apis/center"
 	"github.com/micro/go-log"
 )
 
 func main() {
 
 	if len(os.Args) != 2 {
-		log.Log("apis [applet|test]")
+		log.Log("apis [applet|center|test]")
 		return
 	}
 
@@ -22,6 +23,12 @@ func main() {
 
 		static.NewServeStatic().RegisterTo(apis)
 		example.NewHelloAPI().RegisterTo(apis)
+
+		apis.Start()
+	} else if os.Args[1] == "center" {
+		apis := center.NewAPIServer()
+
+		center.NewAuthAPI().RegisterTo(apis)
 
 		apis.Start()
 	} else if os.Args[1] == "test" {

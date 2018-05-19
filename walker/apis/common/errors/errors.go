@@ -104,6 +104,16 @@ func Conflict(id, format string, a ...interface{}) error {
 	}
 }
 
+// NotImplemented generates a 501 error.
+func NotImplemented(id, format string, a ...interface{}) error {
+	return &Error{
+		ID:     id,
+		Code:   501,
+		Detail: fmt.Sprintf(format, a...),
+		Status: http.StatusText(501),
+	}
+}
+
 // Response out error to response
 func Response(resp *restful.Response, err error)  {
 	responseError(resp, Parse(err))
