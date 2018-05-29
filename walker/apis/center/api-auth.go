@@ -1,14 +1,12 @@
 package center
 
 import (
-	"io"
-
 	"btdxcx.com/walker/apis/common/filters"
 	"btdxcx.com/walker/apis/common/server"
 
-	"github.com/emicklei/go-restful"
 	"btdxcx.com/walker/apis/common/errors"
 	"btdxcx.com/walker/model"
+	"github.com/emicklei/go-restful"
 )
 
 // AuthAPI apis for auth
@@ -49,10 +47,17 @@ func (api AuthAPI) RegisterTo(server server.APIServer) {
 		Returns(201, "Created", model.Token{}).
 		Returns(404, "Not Found", nil))
 
+	ws.Route(ws.POST("signup").To(noop).
+		// docs
+		Doc("用户注册").
+		Reads(model.AuthRequest{}).
+		Writes(model.Token{}).
+		Returns(201, "Created", model.Token{}).
+		Returns(401, "Bad Request", nil))
+
 	server.GetContainer().Add(ws)
 }
 
 func noop(req *restful.Request, resp *restful.Response) {
-	io.WriteString(resp, "world")
-	errors.NotImplemented("apis.center.AuthAPI", "not implemented")
+	errors.Response(resp, errors.NotImplemented("apis.center.AuthAPI", "not implemented"))
 }

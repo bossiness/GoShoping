@@ -267,7 +267,6 @@ func (h *Handler) Refresh(ctx context.Context, req *proto.RefreshRequest, rsp *p
 		return errors.Unauthorized("com.btdxcx.micro.srv.jwtauth.Refresh", "token expired")
 	}
 
-	
 	accessClaims, err := parseToken(record.AccessToken, record.Cipher)
 	if accessClaims == nil && err != nil {
 		return errors.Unauthorized("com.btdxcx.micro.srv.jwtauth.Refresh", err.Error())
