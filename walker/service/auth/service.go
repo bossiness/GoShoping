@@ -11,6 +11,7 @@ import (
 	"github.com/satori/go.uuid"
 	"golang.org/x/crypto/bcrypt"
 	"golang.org/x/net/context"
+	"gopkg.in/mgo.v2"
 )
 
 // IService auth service
@@ -20,12 +21,31 @@ type IService interface {
 
 // Service auth service
 type Service struct {
-	ARepo account.Repository
-	TRepo token.Repository
+	Session *mgo.Session
+}
+
+// GetARepo get account repository
+func (s *Service) GetARepo() account.IRepository {
+    return &account.Repository{
+		Session: s.Session.Clone(),
+	}
+}
+
+// GetTRepo get token repository
+func (s *Service) GetTRepo() token.IRepository {
+    return &token.Repository{
+		Session: s.Session.Clone(),
+	}
 }
 
 // Create a new auth
-func (srv *Service) Create(ctx context.Context, req *model.AuthRequest, res *model.Token) error {
+func (s *Service) Create(ctx context.Context, req *model.AuthRequest, res *model.Token) error {
+
+	arepo := s.GetARepo()
+	defer arepo.Close()
+
+	trepo := s.GetTRepo()
+	defer trepo.Close()
 
 	hashedPass, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
 	if err != nil {
@@ -39,7 +59,7 @@ func (srv *Service) Create(ctx context.Context, req *model.AuthRequest, res *mod
 		Metadata:     req.Metadata,
 		Type:         req.Type,
 	}
-	if err := srv.ARepo.Create(&account); err != nil {
+	if err := arepo.Create(&account); err != nil {
 		return errors.Conflict("walker.service.auth.create", "account create [%v]", err)
 	}
 
@@ -48,9 +68,14 @@ func (srv *Service) Create(ctx context.Context, req *model.AuthRequest, res *mod
 		return err
 	}
 
-	if err := srv.TRepo.Create(jwt); err != nil {
+	if err := trepo.Create(jwt); err != nil {
 		return errors.Conflict("walker.service.auth.create", "jwt token create [%v]", err)
 	}
+
+	res.AccessToken = jwt.Access
+	res.RefreshToken = jwt.Refresh
+	res.ExpiresAt = jwt.ExpiresAt
+	res.Scopes = jwt.Scopes
 
 	return nil
 }

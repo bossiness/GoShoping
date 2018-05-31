@@ -7,8 +7,6 @@ import (
 	"btdxcx.com/walker/model"
 	"btdxcx.com/walker/repository"
 
-	"btdxcx.com/walker/repository/account"
-	"btdxcx.com/walker/repository/token"
 	"btdxcx.com/walker/service/auth"
 	"golang.org/x/net/context"
 )
@@ -38,11 +36,8 @@ func TestAuthService(t *testing.T) {
 		t.Fatal("Could not connect to datastore with host ", host, err)
 	}
 
-	arepo := account.Repository{Session: session}
-	trepo := token.Repository{Session: session}
 	auth := auth.Service{
-		ARepo: arepo,
-		TRepo: trepo,
+		Session: session,
 	}
 
 	out := model.Token{}
@@ -50,6 +45,11 @@ func TestAuthService(t *testing.T) {
 		t.Fatal("expected: auth Create error:", err)
 	}
 
-	
+	if len(out.AccessToken) == 0 {
+		t.Fatal("out access token is empty.")
+	}
 
+	if len(out.RefreshToken) == 0 {
+		t.Fatal("out refresh token is empty.")
+	}
 }
