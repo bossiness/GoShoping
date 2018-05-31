@@ -46,7 +46,7 @@ func (repo *Repository) GetAll() ([]*model.Account, error) {
 
 // Close session
 func (repo *Repository) Close()  {
-	repo.Session.Clone()
+	repo.Session.Close()
 }
 
 func (repo *Repository) collection() *mgo.Collection {
