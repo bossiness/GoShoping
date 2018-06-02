@@ -24,16 +24,16 @@ type Service struct {
 	Session *mgo.Session
 }
 
-// GetARepo get account repository
-func (s *Service) GetARepo() account.IRepository {
-    return &account.Repository{
+// GetRepoOfAccount get account repository
+func (s *Service) GetRepoOfAccount() account.IRepository {
+	return &account.Repository{
 		Session: s.Session.Clone(),
 	}
 }
 
-// GetTRepo get token repository
-func (s *Service) GetTRepo() token.IRepository {
-    return &token.Repository{
+// GetRepoOfToken get token repository
+func (s *Service) GetRepoOfToken() token.IRepository {
+	return &token.Repository{
 		Session: s.Session.Clone(),
 	}
 }
@@ -41,10 +41,10 @@ func (s *Service) GetTRepo() token.IRepository {
 // Create a new auth
 func (s *Service) Create(ctx context.Context, req *model.AuthRequest, res *model.Token) error {
 
-	arepo := s.GetARepo()
+	arepo := s.GetRepoOfAccount()
 	defer arepo.Close()
 
-	trepo := s.GetTRepo()
+	trepo := s.GetRepoOfToken()
 	defer trepo.Close()
 
 	hashedPass, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
@@ -76,6 +76,29 @@ func (s *Service) Create(ctx context.Context, req *model.AuthRequest, res *model
 	res.RefreshToken = jwt.Refresh
 	res.ExpiresAt = jwt.ExpiresAt
 	res.Scopes = jwt.Scopes
+
+	return nil
+}
+
+func (s *Service) createAccount(ctx context.Context, req *model.AuthRequest) error {
+	repo := s.GetRepoOfAccount()
+	defer repo.Close()
+
+	hashedPass, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
+	if err != nil {
+		return errors.InternalServerError("walker.service.auth.create", "bcrypt [%v]", err)
+	}
+
+	account := model.Account{
+		ClientID:     req.Username,
+		ClientSecret: string(hashedPass),
+		CreatedAt:    time.Now().Unix(),
+		Metadata:     req.Metadata,
+		Type:         req.Type,
+	}
+	if err := repo.Create(&account); err != nil {
+		return errors.Conflict("walker.service.auth.create", "account create [%v]", err)
+	}
 
 	return nil
 }
@@ -125,7 +148,7 @@ func generateToken(
 	if err != nil {
 		return "", err
 	}
-	
+
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"exp":       exp,
 		"client_id": clientID,

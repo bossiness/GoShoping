@@ -1,4 +1,4 @@
-package account
+package adminuser
 
 import (
 	"gopkg.in/mgo.v2"
@@ -7,13 +7,13 @@ import (
 
 const (
 	dbName = "headquarters"
-	accountCollection = "account"
+	adminCollection = "adminuser"
 )
 
-// IRepository auth repository interface
+// IRepository adminuser repository interface
 type IRepository interface {
-	Create(*model.Account) error
-	GetAll() ([]*model.Account, error)
+	Create(*model.AdminUser) error
+	GetAll() ([]*model.AdminUser, error)
 	Close()
 }
 
@@ -23,9 +23,9 @@ type Repository struct {
 }
 
 // Create a new account
-func (repo *Repository) Create(account *model.Account) error {
+func (repo *Repository) Create(m *model.AdminUser) error {
 	index := mgo.Index{
-		Key:        []string{"client_id"},
+		Key:        []string{"username"},
 		Unique:     true,
 		DropDups:   true,
 		Background: true,
@@ -35,14 +35,7 @@ func (repo *Repository) Create(account *model.Account) error {
 	if err := c.EnsureIndex(index); err != nil {
 		return err
 	}
-	return c.Insert(account)
-}
-
-// GetAll consignments
-func (repo *Repository) GetAll() ([]*model.Account, error) {
-	var accounts []*model.Account
-	err := repo.collection().Find(nil).All(&accounts)
-	return accounts, err
+	return c.Insert(m)
 }
 
 // Close session
@@ -51,5 +44,5 @@ func (repo *Repository) Close()  {
 }
 
 func (repo *Repository) collection() *mgo.Collection {
-	return repo.Session.DB(dbName).C(accountCollection)
+	return repo.Session.DB(dbName).C(adminCollection)
 }

@@ -30,12 +30,13 @@ func (repo *Repository) Create(account *model.Jwtauth) error {
 		DropDups:   true,
 		Background: true,
 	}
+	c := repo.collection()
 
-	if err := repo.collection().EnsureIndex(index); err != nil {
+	if err := c.EnsureIndex(index); err != nil {
 		return err
 	}
 
-	return repo.collection().Insert(account)
+	return c.Insert(account)
 }
 
 // GetAll consignments
