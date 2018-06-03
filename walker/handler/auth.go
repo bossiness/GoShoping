@@ -6,9 +6,10 @@ import (
 
 	"btdxcx.com/walker/model"
 
+	"net/http"
+
 	"btdxcx.com/walker/service/auth"
 	"golang.org/x/net/context"
-	"net/http"
 )
 
 // AuthHandler Auth handler
@@ -92,7 +93,7 @@ func (h *AuthHandler) Signup(req *restful.Request, rsp *restful.Response) {
 // Signout 登出
 func (h *AuthHandler) Signout(req *restful.Request, rsp *restful.Response) {
 	clientID := req.HeaderParameter("X-Username")
-	
+
 	in := &model.Introspect{
 		Username: clientID,
 	}

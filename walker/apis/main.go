@@ -29,6 +29,7 @@ func main() {
 		apis := center.NewAPIServer()
 
 		center.NewAuthAPI().RegisterTo(apis)
+		center.NewAdminUserAPI().RegisterTo(apis)
 
 		apis.Start()
 	} else if os.Args[1] == "test" {

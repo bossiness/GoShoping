@@ -37,12 +37,6 @@ type Introspect struct {
 	Username string `json:"username"`
 }
 
-
-
-// NoContent no content
-type NoContent struct {
-}
-
 // Account db
 type Account struct {
 	ID           bson.ObjectId     `bson:"_id,omitempty"`
