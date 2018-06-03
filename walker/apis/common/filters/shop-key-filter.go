@@ -58,6 +58,7 @@ func filterShopTag(tag string, shoptag string, id string, req *restful.Request, 
 	}
 
 	req.Request.Header.Del(xshopKEY)
+	req.Request.Header.Add("X-TAG", shoptag)
 	req.Request.Header.Add(xshopID, id)
 	resp.AddHeader(xshopID, id)
 	return nil

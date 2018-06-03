@@ -26,6 +26,23 @@ type Token struct {
 	Metadata     map[string]string `json:"metadata,omitempty"`
 }
 
+// IntrospectRequest introspect token
+type IntrospectRequest struct {
+	AccessToken string `json:"access_token,omitempty"`
+	ShopID      string `json:"shop_id,omitempty"`
+}
+
+// Introspect token
+type Introspect struct {
+	Username string `json:"username"`
+}
+
+
+
+// NoContent no content
+type NoContent struct {
+}
+
 // Account db
 type Account struct {
 	ID           bson.ObjectId     `bson:"_id,omitempty"`
@@ -47,5 +64,3 @@ type Jwtauth struct {
 	ExpiresAt int64         `bson:"expires_at"`
 	Cipher    string        `bson:"cipher"`
 }
-
-

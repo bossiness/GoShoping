@@ -8,17 +8,48 @@ import (
 
 	"btdxcx.com/walker/service/auth"
 	"golang.org/x/net/context"
+	"net/http"
 )
 
 // AuthHandler Auth handler
 type AuthHandler struct {
-	Dot     string
 	Service auth.IService
 }
 
 // Signin 登陆
 func (h *AuthHandler) Signin(req *restful.Request, rsp *restful.Response) {
+	in := new(model.AuthRequest)
+	if err := req.ReadEntity(&in); err != nil {
+		errors.Response(rsp, errors.BadRequest("handler.signup", "request error [%v]", err))
+		return
+	}
 
+	if len(in.Username) == 0 {
+		errors.Response(rsp, errors.BadRequest("handler.signup", "username empty"))
+		return
+	}
+
+	if len(in.Password) == 0 {
+		errors.Response(rsp, errors.BadRequest("handler.signup", "password empty."))
+		return
+	}
+
+	in.Type = req.HeaderParameter("X-Tag")
+	in.ShopID = req.HeaderParameter("X-Shop-Id")
+
+	out := &model.Token{}
+	if err := h.Service.Signin(context.TODO(), in, out); err != nil {
+		errors.Response(rsp, err)
+		return
+	}
+
+	if err := rsp.WriteEntity(out); err != nil {
+		err1 := errors.InternalServerError("handler.signup", "write entiry err: ", err)
+		errors.Response(rsp, err1)
+		return
+	}
+
+	rsp.WriteHeader(http.StatusCreated)
 }
 
 // Signup 注册
@@ -40,7 +71,8 @@ func (h *AuthHandler) Signup(req *restful.Request, rsp *restful.Response) {
 		return
 	}
 
-	in.Type = h.Dot
+	in.Type = req.HeaderParameter("X-Tag")
+	in.ShopID = req.HeaderParameter("X-Shop-Id")
 
 	out := &model.Token{}
 	if err := h.Service.Create(context.TODO(), in, out); err != nil {
@@ -53,11 +85,30 @@ func (h *AuthHandler) Signup(req *restful.Request, rsp *restful.Response) {
 		errors.Response(rsp, err1)
 		return
 	}
+
+	rsp.WriteHeader(http.StatusCreated)
 }
 
 // Signout 登出
 func (h *AuthHandler) Signout(req *restful.Request, rsp *restful.Response) {
+	clientID := req.HeaderParameter("X-Username")
+	
+	in := &model.Introspect{
+		Username: clientID,
+	}
+	out := &model.NoContent{}
+	if err := h.Service.Signout(context.TODO(), in, out); err != nil {
+		errors.Response(rsp, err)
+		return
+	}
 
+	if err := rsp.WriteEntity(out); err != nil {
+		err1 := errors.InternalServerError("handler.signout", "write entiry err: ", err)
+		errors.Response(rsp, err1)
+		return
+	}
+
+	rsp.WriteHeader(http.StatusNoContent)
 }
 
 // Password 修改密码

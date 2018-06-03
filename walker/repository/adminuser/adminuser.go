@@ -13,7 +13,6 @@ const (
 // IRepository adminuser repository interface
 type IRepository interface {
 	Create(*model.AdminUser) error
-	GetAll() ([]*model.AdminUser, error)
 	Close()
 }
 

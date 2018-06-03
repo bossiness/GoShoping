@@ -24,7 +24,6 @@ func NewAuthAPI() AuthAPI {
 	return AuthAPI{
 		path: "/auth",
 		handler: &handler.AuthHandler{
-			Dot: "center",
 		},
 	}
 }
@@ -45,13 +44,15 @@ func (api AuthAPI) RegisterTo(server server.APIServer) {
 
 	ws.
 		Filter(filter.NCSACommonLogFormatLogger()).
-		Filter(filter.CORS(server.GetContainer()))
+		Filter(filter.CORS(server.GetContainer())).
+		Filter(filter.ShopKEYFilter("center"))
 
-	api.handler.Service = &auth.Service{
+	authService := &auth.Service{
 		Session: repository.SingleSession(),
 	}
+	api.handler.Service = authService
 
-	ws.Route(ws.POST("signin").To(noop).
+	ws.Route(ws.POST("signin").To(api.handler.Signin).
 		// docs
 		Doc("登录一个账号").
 		Reads(model.AuthRequest{}).
@@ -66,6 +67,16 @@ func (api AuthAPI) RegisterTo(server server.APIServer) {
 		Writes(model.Token{}).
 		Returns(201, "Created", model.Token{}).
 		Returns(401, "Bad Request", nil))
+
+	ws.Route(ws.DELETE("signout").
+		Filter(filter.BearerAuthenticate(authService)).
+		To(api.handler.Signout).
+		// docs
+		Doc("用户注册").
+		Reads(model.AuthRequest{}).
+		Writes(model.Token{}).
+		Returns(204, "No Content", model.Token{}).
+		Returns(404, "Not Found", nil))
 
 	server.GetContainer().Add(ws)
 }

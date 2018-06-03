@@ -1,8 +1,10 @@
 package token
 
 import (
+	"gopkg.in/mgo.v2/bson"
 	"btdxcx.com/walker/model"
 	"gopkg.in/mgo.v2"
+	
 )
 
 const (
@@ -13,6 +15,7 @@ const (
 // IRepository token repository interface
 type IRepository interface {
 	Create(*model.Jwtauth) error
+	Delete(string) error
 	GetAll() ([]*model.Jwtauth, error)
 	Close()
 }
@@ -23,20 +26,16 @@ type Repository struct {
 }
 
 // Create a new account
-func (repo *Repository) Create(account *model.Jwtauth) error {
-	index := mgo.Index{
-		Key:        []string{"client_id"},
-		Unique:     true,
-		DropDups:   true,
-		Background: true,
-	}
+func (repo *Repository) Create(jwt *model.Jwtauth) error {
 	c := repo.collection()
+	c.Remove(bson.M{"client_id": jwt.ClientID})
+	return c.Insert(jwt)
+}
 
-	if err := c.EnsureIndex(index); err != nil {
-		return err
-	}
-
-	return c.Insert(account)
+// Delete a new account
+func (repo *Repository) Delete(clientID string) error {
+	c := repo.collection()
+	return c.Remove(bson.M{"client_id": clientID})
 }
 
 // GetAll consignments

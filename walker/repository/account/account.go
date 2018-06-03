@@ -1,6 +1,7 @@
 package account
 
 import (
+	"gopkg.in/mgo.v2/bson"
 	"gopkg.in/mgo.v2"
 	"btdxcx.com/walker/model"
 )
@@ -13,7 +14,7 @@ const (
 // IRepository auth repository interface
 type IRepository interface {
 	Create(*model.Account) error
-	GetAll() ([]*model.Account, error)
+	Get(string) (*model.Account, error)
 	Close()
 }
 
@@ -38,11 +39,14 @@ func (repo *Repository) Create(account *model.Account) error {
 	return c.Insert(account)
 }
 
-// GetAll consignments
-func (repo *Repository) GetAll() ([]*model.Account, error) {
-	var accounts []*model.Account
-	err := repo.collection().Find(nil).All(&accounts)
-	return accounts, err
+// Get consignments
+func (repo *Repository) Get(clientID string) (*model.Account, error) {
+	account := new(model.Account)
+	query := bson.M{
+		"client_id": clientID,
+	}
+	err := repo.collection().Find(query).One(account)
+	return account, err
 }
 
 // Close session
